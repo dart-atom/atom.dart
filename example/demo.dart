@@ -1,4 +1,3 @@
-
 // Build with: `dev_compiler -oexample/ddc example/demo.dart`.
 
 import 'package:atom/atom.dart';
