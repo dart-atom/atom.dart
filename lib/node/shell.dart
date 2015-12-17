@@ -4,20 +4,21 @@
 /// Exposes the node shell APIs (https://github.com/nwjs/nw.js/wiki/Shell).
 library node.shell;
 
+import '../src/js.dart';
 import 'node.dart';
 
 final Shell shell = new Shell._();
 
-class Shell {
-  Shell._();
+class Shell extends ProxyHolder {
+  Shell._() : super(require('shell'));
 
   /// Open the given path in the desktop's default manner.
-  openItem(String path) => require('shell').openItem(path);
+  openItem(String path) => invoke('openItem', path);
 
   /// Show the given path in a file manager. If possible, select the file.
-  showItemInFolder(String path) => require('shell').showItemInFolder(path);
+  showItemInFolder(String path) => invoke('showItemInFolder', path);
 
   /// Open the given external protocol URI in the desktop's default manner. (For
   /// example, mailto: URLs in the default mail user agent.)
-  openExternal(String url) => require('shell').openExternal(url);
+  openExternal(String url) => invoke('openExternal', url);
 }

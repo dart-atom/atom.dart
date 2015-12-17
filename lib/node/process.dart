@@ -4,22 +4,21 @@
 /// Exposes the node process APIs.
 library node.process;
 
+import '../src/js.dart';
 import 'node.dart';
 
 final Process process = new Process._();
 
-class Process {
-  final dynamic _process;
-
-  Process._() : _process = require('process');
+class Process extends ProxyHolder {
+  Process._() : super(require('process'));
 
   /// 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'.
-  String get platform => _process['platform'];
+  String get platform => obj['platform'];
 
-  String get chromeVersion => _process['versions']['chrome'];
+  String get chromeVersion => obj['versions']['chrome'];
 
-  /// Get the value of an environment variable. This is often not accurate on the
-  /// mac since mac apps are launched in a different shell then the terminal
+  /// Get the value of an environment variable. This is often not accurate on
+  /// the mac since mac apps are launched in a different shell then the terminal
   /// default.
-  String env(String key) => _process['env'][key];
+  String env(String key) => obj['env'][key];
 }
