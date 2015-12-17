@@ -34,14 +34,14 @@ abstract class AtomPackage {
   dynamic serialize() => {};
   void deactivate() { }
 
-  Future<Map> loadPackageJson() {
-    return HttpRequest.getString('atom://${id}/package.json').then((str) {
+  Future<Map<String, dynamic>> loadPackageJson() {
+    return HttpRequest.getString('atom://${id}/package.json').then((String str) {
       return JSON.decode(str);
-    });
+    }) as Future<Map>;
   }
 
   Future<String> getPackageVersion() {
-    return loadPackageJson().then((map) => map['version']);
+    return loadPackageJson().then((Map map) => map['version']) as Future<String>;
   }
 }
 
@@ -250,12 +250,12 @@ class NotificationHelper {
   void appendText(String text, {bool stderr: false}) {
     _classList.callMethod('toggle', ['has-detail', true]);
 
-    List<Element> elements = text.split('\n').map((line) {
+    List<Element> elements = new List.from(text.split('\n').map((line) {
       DivElement div = new DivElement()..text = line;
       div.classes.toggle('line');
       if (stderr) div.classes.toggle('text-error');
       return div;
-    }).toList();
+    }));
 
     _detailContent.children.addAll(elements);
     if (elements.isNotEmpty) elements.last.scrollIntoView(ScrollAlignment.BOTTOM);
