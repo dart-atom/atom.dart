@@ -5,8 +5,8 @@
 library atom;
 
 import 'dart:async';
-import 'dart:convert' show JSON;
-import 'dart:html' show Element, DivElement, HttpRequest, ScrollAlignment;
+// TODO: No dart:html.
+// import 'dart:html' show Element, DivElement, HttpRequest, ScrollAlignment;
 
 import 'src/js.dart';
 
@@ -34,15 +34,16 @@ abstract class AtomPackage {
   dynamic serialize() => {};
   void deactivate() { }
 
-  Future<Map<String, dynamic>> loadPackageJson() {
-    return HttpRequest.getString('atom://${id}/package.json').then((String str) {
-      return JSON.decode(str);
-    }) as Future<Map>;
-  }
-
-  Future<String> getPackageVersion() {
-    return loadPackageJson().then((Map map) => map['version']) as Future<String>;
-  }
+  // TODO: No dart:html.
+  // Future<Map<String, dynamic>> loadPackageJson() {
+  //   return HttpRequest.getString('atom://${id}/package.json').then((String str) {
+  //     return JSON.decode(str);
+  //   }) as Future<Map>;
+  // }
+  //
+  // Future<String> getPackageVersion() {
+  //   return loadPackageJson().then((Map map) => map['version']) as Future<String>;
+  // }
 }
 
 class Atom extends ProxyHolder {
@@ -206,83 +207,83 @@ class NotificationButton {
   JsObject toProxy() => jsify({'text': text, 'onDidClick': (_) => onDidClick()});
 }
 
-/// A helper class to manipulate the UI of [Notification]s.
-class NotificationHelper {
-  JsObject _view;
-  var _classList;
-  Element _content;
-  Element _titleElement;
-  Element _detailContent;
-  Element _description;
-
-  NotificationHelper(this._view) {
-    _classList = _view['classList'];
-    _content = _view.callMethod('querySelector', ['div.content']);
-    _titleElement = _content.querySelector('div.message p');
-    _detailContent = _content.querySelector('div.detail-content');
-    _description = _content.querySelector('div.meta div.description');
-    // _classList.callMethod('add', ['dartlang']);
-  }
-
-  void setNoWrap() {
-    _detailContent.classes.toggle('detail-content-no-wrap');
-  }
-
-  // void setRunning() {
-  //   try {
-  //     // TODO: We can't actually get an html element for the `atom-notification`
-  //     // custom element, because Dart and custom elements.
-  //     _classList.callMethod('remove', ['icon-info']);
-  //     _classList.callMethod('add', ['icon-running']);
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-
-  Element get titleElement => _titleElement;
-  Element get detailContent => _detailContent;
-
-  String get title => _titleElement.text;
-  set title(String value) {
-    _titleElement.text = value;
-  }
-
-  void appendText(String text, {bool stderr: false}) {
-    _classList.callMethod('toggle', ['has-detail', true]);
-
-    List<Element> elements = new List.from(text.split('\n').map((line) {
-      DivElement div = new DivElement()..text = line;
-      div.classes.toggle('line');
-      if (stderr) div.classes.toggle('text-error');
-      return div;
-    }));
-
-    _detailContent.children.addAll(elements);
-    if (elements.isNotEmpty) elements.last.scrollIntoView(ScrollAlignment.BOTTOM);
-  }
-
-  void setSummary(String text) {
-    _description.text = text;
-  }
-
-  void showSuccess() {
-    try {
-      _classList.callMethod('remove', ['info', 'icon-info', 'icon-running']);
-      _classList.callMethod('add', ['success', 'icon-check']);
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  void showError() {
-    try {
-      _classList.callMethod('remove', ['info', 'icon-info', 'icon-running']);
-      _classList.callMethod('add', ['error', 'icon-flame']);
-    } catch (e) {
-      print(e);
-    }
-  }
-}
+// /// A helper class to manipulate the UI of [Notification]s.
+// class NotificationHelper {
+//   JsObject _view;
+//   var _classList;
+//   Element _content;
+//   Element _titleElement;
+//   Element _detailContent;
+//   Element _description;
+//
+//   NotificationHelper(this._view) {
+//     _classList = _view['classList'];
+//     _content = _view.callMethod('querySelector', ['div.content']);
+//     _titleElement = _content.querySelector('div.message p');
+//     _detailContent = _content.querySelector('div.detail-content');
+//     _description = _content.querySelector('div.meta div.description');
+//     // _classList.callMethod('add', ['dartlang']);
+//   }
+//
+//   void setNoWrap() {
+//     _detailContent.classes.toggle('detail-content-no-wrap');
+//   }
+//
+//   // void setRunning() {
+//   //   try {
+//   //     // TODO: We can't actually get an html element for the `atom-notification`
+//   //     // custom element, because Dart and custom elements.
+//   //     _classList.callMethod('remove', ['icon-info']);
+//   //     _classList.callMethod('add', ['icon-running']);
+//   //   } catch (e) {
+//   //     print(e);
+//   //   }
+//   // }
+//
+//   Element get titleElement => _titleElement;
+//   Element get detailContent => _detailContent;
+//
+//   String get title => _titleElement.text;
+//   set title(String value) {
+//     _titleElement.text = value;
+//   }
+//
+//   void appendText(String text, {bool stderr: false}) {
+//     _classList.callMethod('toggle', ['has-detail', true]);
+//
+//     List<Element> elements = new List.from(text.split('\n').map((line) {
+//       DivElement div = new DivElement()..text = line;
+//       div.classes.toggle('line');
+//       if (stderr) div.classes.toggle('text-error');
+//       return div;
+//     }));
+//
+//     _detailContent.children.addAll(elements);
+//     if (elements.isNotEmpty) elements.last.scrollIntoView(ScrollAlignment.BOTTOM);
+//   }
+//
+//   void setSummary(String text) {
+//     _description.text = text;
+//   }
+//
+//   void showSuccess() {
+//     try {
+//       _classList.callMethod('remove', ['info', 'icon-info', 'icon-running']);
+//       _classList.callMethod('add', ['success', 'icon-check']);
+//     } catch (e) {
+//       print(e);
+//     }
+//   }
+//
+//   void showError() {
+//     try {
+//       _classList.callMethod('remove', ['info', 'icon-info', 'icon-running']);
+//       _classList.callMethod('add', ['error', 'icon-flame']);
+//     } catch (e) {
+//       print(e);
+//     }
+//   }
+// }
 
 /// ViewRegistry handles the association between model and view types in Atom.
 /// We call this association a View Provider. As in, for a given model, this
