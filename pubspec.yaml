@@ -1,8 +1,11 @@
 name: atom
 description: Atom APIs for Dart.
-version: 0.0.2
+version: 0.0.3
 author: Devon Carew <devoncarew@gmail.com>
 homepage: https://github.com/dart-atom/atom.dart
+
+dependencies:
+  logging: any
 
 environment:
   sdk: '>=1.0.0 <2.0.0'

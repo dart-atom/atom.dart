@@ -4,12 +4,13 @@
 /// Exposes the node OS APIs.
 library node.os;
 
+import '../src/js.dart';
 import 'node.dart';
 
 final OS os = new OS._();
 
-class OS {
-  OS._();
+class OS extends ProxyHolder {
+  OS._() : super(require('os'));
 
-  String tmpdir(String path) => require('os').tmpdir(path);
+  String tmpdir(String path) => invoke('tmpdir', path);
 }

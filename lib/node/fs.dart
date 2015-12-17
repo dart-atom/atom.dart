@@ -9,25 +9,24 @@ import 'node.dart';
 
 final FS fs = new FS._();
 
-class FS {
-  final FS _fs;
-
-  FS._() : _fs = require('fs');
+class FS extends ProxyHolder {
+  FS._() : super(require('fs'));
 
   /// Relative path entries are removed and symlinks are resolved to their final
   /// destination.
-  String realpathSync(String path) => _fs.realpathSync(path);
+  String realpathSync(String path) => invoke('realpathSync', path);
 
-  Stats statSync(String path) => _fs.statSync(path);
+  Stats statSync(String path) => new Stats._(invoke('statSync', path));
 
-  bool existsSync(String path) => _fs.existsSync(path);
+  bool existsSync(String path) => invoke('existsSync', path);
 }
 
-@JsName()
-abstract class Stats {
-  bool isFile();
-  bool isDirectory();
+class Stats extends ProxyHolder {
+  Stats._(JsObject obj) : super(obj);
+
+  bool isFile() => invoke('isFile');
+  bool isDirectory() => invoke('isDirectory');
 
   // The last modified time (`2015-10-08 17:48:42.000`).
-  String get mtime;
+  String get mtime => obj['mtime'];
 }
