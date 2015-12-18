@@ -8,7 +8,7 @@ import 'package:logging/logging.dart';
 
 import '../utils/disposable.dart';
 
-export 'dart:js' show context, JsObject;
+export 'dart:js' show context, JsObject, JsFunction;
 
 Logger _logger = new Logger("js");
 

@@ -5,10 +5,17 @@
 library atom;
 
 import 'dart:async';
-// TODO: No dart:html.
-// import 'dart:html' show Element, DivElement, HttpRequest, ScrollAlignment;
+import 'dart:convert' show JSON;
+import 'dart:html' show Element, HttpRequest;
 
+import 'package:logging/logging.dart';
+
+import 'node/node.dart';
 import 'src/js.dart';
+import 'src/utils.dart';
+import 'utils/disposable.dart';
+
+final Logger _logger = new Logger('atom');
 
 /// The singleton instance of [Atom].
 final Atom atom = new Atom();
@@ -34,20 +41,19 @@ abstract class AtomPackage {
   dynamic serialize() => {};
   void deactivate() { }
 
-  // TODO: No dart:html.
-  // Future<Map<String, dynamic>> loadPackageJson() {
-  //   return HttpRequest.getString('atom://${id}/package.json').then((String str) {
-  //     return JSON.decode(str);
-  //   }) as Future<Map>;
-  // }
-  //
-  // Future<String> getPackageVersion() {
-  //   return loadPackageJson().then((Map map) => map['version']) as Future<String>;
-  // }
+  Future<Map<String, dynamic>> loadPackageJson() {
+    return HttpRequest.getString('atom://${id}/package.json').then((String str) {
+      return JSON.decode(str);
+    }) as Future<Map>;
+  }
+
+  Future<String> getPackageVersion() {
+    return loadPackageJson().then((Map map) => map['version']) as Future<String>;
+  }
 }
 
 class Atom extends ProxyHolder {
-  // CommandRegistry _commands;
+  CommandRegistry _commands;
   // Config _config;
   // ContextMenuManager _contextMenu;
   // GrammarRegistry _grammars;
@@ -55,10 +61,10 @@ class Atom extends ProxyHolder {
   PackageManager _packages;
   // Project _project;
   ViewRegistry _views;
-  // Workspace _workspace;
+  Workspace _workspace;
 
   Atom() : super(context['atom']) {
-    // _commands = new CommandRegistry(obj['commands']);
+    _commands = new CommandRegistry(obj['commands']);
     // _config = new Config(obj['config']);
     // _contextMenu = new ContextMenuManager(obj['contextMenu']);
     // _grammars = new GrammarRegistry(obj['grammars']);
@@ -66,10 +72,10 @@ class Atom extends ProxyHolder {
     _packages = new PackageManager(obj['packages']);
     // _project = new Project(obj['project']);
     _views = new ViewRegistry(obj['views']);
-    // _workspace = new Workspace(obj['workspace']);
+    _workspace = new Workspace(obj['workspace']);
   }
 
-  // CommandRegistry get commands => _commands;
+  CommandRegistry get commands => _commands;
   // Config get config => _config;
   // ContextMenuManager get contextMenu => _contextMenu;
   // GrammarRegistry get grammars => _grammars;
@@ -77,7 +83,7 @@ class Atom extends ProxyHolder {
   PackageManager get packages => _packages;
   // Project get project => _project;
   ViewRegistry get views => _views;
-  // Workspace get workspace => _workspace;
+  Workspace get workspace => _workspace;
 
   String getVersion() => invoke('getVersion');
 
@@ -108,6 +114,28 @@ class Atom extends ProxyHolder {
     });
     return completer.future;
   }
+}
+
+class CommandRegistry extends ProxyHolder {
+  StreamController<String> _dispatchedController = new StreamController.broadcast();
+
+  CommandRegistry(JsObject object) : super(object);
+
+  Stream<String> get onDidDispatch => _dispatchedController.stream;
+
+  /// Add one or more command listeners associated with a selector.
+  ///
+  /// [target] can be a String - a css selector - or an Html Element.
+  Disposable add(dynamic target, String commandName, void callback(AtomEvent event)) {
+    return new JsDisposable(invoke('add', target, commandName, (e) {
+      _dispatchedController.add(commandName);
+      callback(new AtomEvent(e));
+    }));
+  }
+
+  /// Simulate the dispatch of a command on a DOM node.
+  void dispatch(Element target, String commandName, {Map options}) =>
+      invoke('dispatch', target, commandName, options);
 }
 
 /// A notification manager used to create notifications to be shown to the user.
@@ -299,6 +327,100 @@ class ViewRegistry extends ProxyHolder {
   dynamic getView(object) => invoke('getView', object);
 }
 
+/// Represents the state of the user interface for the entire window. Interact
+/// with this object to open files, be notified of current and future editors,
+/// and manipulate panes.
+class Workspace extends ProxyHolder {
+  FutureSerializer<TextEditor> _openSerializer = new FutureSerializer<TextEditor>();
+
+  Workspace(JsObject object) : super(object);
+
+  // /// Returns a list of [TextEditor]s.
+  // List<TextEditor> getTextEditors() =>
+  //     new List.from(invoke('getTextEditors').map((e) => new TextEditor(e)));
+  //
+  // /// Get the active item if it is a [TextEditor].
+  // TextEditor getActiveTextEditor() {
+  //   var result = invoke('getActiveTextEditor');
+  //   return result == null ? null : new TextEditor(result);
+  // }
+  //
+  // /// Invoke the given callback with all current and future text editors in the
+  // /// workspace.
+  // Disposable observeTextEditors(void callback(TextEditor editor)) {
+  //   var disposable = invoke('observeTextEditors', (ed) => callback(new TextEditor(ed)));
+  //   return new JsDisposable(disposable);
+  // }
+  //
+  // Disposable observeActivePaneItem(void callback(dynamic item)) {
+  //   // TODO: What type is the item?
+  //   var disposable = invoke('observeActivePaneItem', (item) => callback(item));
+  //   return new JsDisposable(disposable);
+  // }
+  //
+  // Panel addModalPanel({dynamic item, bool visible, int priority}) =>
+  //     new Panel(invoke('addModalPanel', _panelOptions(item, visible, priority)));
+  //
+  // Panel addTopPanel({dynamic item, bool visible, int priority}) =>
+  //     new Panel(invoke('addTopPanel', _panelOptions(item, visible, priority)));
+  //
+  // Panel addBottomPanel({dynamic item, bool visible, int priority}) =>
+  //     new Panel(invoke('addBottomPanel', _panelOptions(item, visible, priority)));
+  //
+  // Panel addLeftPanel({dynamic item, bool visible, int priority}) =>
+  //     new Panel(invoke('addLeftPanel', _panelOptions(item, visible, priority)));
+  //
+  // Panel addRightPanel({dynamic item, bool visible, int priority}) =>
+  //     new Panel(invoke('addRightPanel', _panelOptions(item, visible, priority)));
+  //
+  // /// Get the Pane containing the given item.
+  // Pane paneForItem(dynamic item) => new Pane(invoke('paneForItem', item));
+
+  /// Opens the given URI in Atom asynchronously. If the URI is already open,
+  /// the existing item for that URI will be activated. If no URI is given, or
+  /// no registered opener can open the URI, a new empty TextEditor will be
+  /// created.
+  ///
+  /// [options] can include initialLine, initialColumn, split, activePane, and
+  /// searchAllPanes.
+  Future<TextEditor> open(String url, {Map options}) {
+    return _openSerializer.perform(() {
+      Future future = promiseToFuture(invoke('open', url, options));
+      return future.then((result) {
+        if (result == null) throw 'unable to open ${url}';
+        TextEditor editor = new TextEditor(result);
+        return editor.isValid() ? editor : null;
+      });
+    });
+  }
+
+  // /// Register an opener for a uri.
+  // ///
+  // /// An [TextEditor] will be used if no openers return a value.
+  // Disposable addOpener(dynamic opener(String url, Map options)) {
+  //   return new JsDisposable(invoke('addOpener', (url, options) {
+  //     Map m = options == null ? {} : jsObjectToDart(options);
+  //     return opener(url, m);
+  //   }));
+  // }
+  //
+  // /// Save all dirty editors.
+  // void saveAll() {
+  //   try {
+  //     invoke('saveAll');
+  //   } catch (e) {
+  //     _logger.info('exception calling saveAll', e);
+  //   }
+  // }
+  //
+  // Map _panelOptions(dynamic item, bool visible, int priority) {
+  //   Map options = {'item': item};
+  //   if (visible != null) options['visible'] = visible;
+  //   if (priority != null) options['priority'] = priority;
+  //   return options;
+  // }
+}
+
 /// Package manager for coordinating the lifecycle of Atom packages. Packages
 /// can be loaded, activated, and deactivated, and unloaded.
 class PackageManager extends ProxyHolder {
@@ -328,4 +450,137 @@ class PackageManager extends ProxyHolder {
   Future activatePackage(String name) {
     return promiseToFuture(invoke('activatePackage', name));
   }
+}
+
+class TextEditor extends ProxyHolder {
+  TextEditor(JsObject object) : super(_cvt(object));
+
+  /// Return whether this editor is a valid object. We sometimes create them
+  /// from JS objects w/o knowning if they are editors for certain.
+  bool isValid() {
+    try {
+      getTitle();
+      getLongTitle();
+      getPath();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  String getTitle() => invoke('getTitle');
+  String getLongTitle() => invoke('getLongTitle');
+  String getPath() => invoke('getPath');
+  bool isModified() => invoke('isModified');
+  bool isEmpty() => invoke('isEmpty');
+  bool isNotEmpty() => !isEmpty();
+}
+
+class BufferedProcess extends ProxyHolder {
+  static BufferedProcess create(String command, {
+      List<String> args,
+      void stdout(String str),
+      void stderr(String str),
+      void exit(num code),
+      String cwd,
+      Map<String, String> env,
+      Function onWillThrowError}) {
+    Map<String, dynamic> options = {'command': command};
+
+    if (args != null) options['args'] = args;
+    if (stdout != null) options['stdout'] = stdout;
+    if (stderr != null) options['stderr'] = stderr;
+    if (exit != null) options['exit'] = exit;
+    if (onWillThrowError != null) options['onWillThrowError'] = (JsObject e) {
+      e.callMethod('handle');
+      onWillThrowError(e['error']);
+    };
+
+    if (cwd != null || env != null) {
+      Map<String, dynamic> nodeOptions = {};
+      if (cwd != null) nodeOptions['cwd'] = cwd;
+      if (env != null) nodeOptions['env'] = jsify(env);
+      options['options'] = nodeOptions;
+    }
+
+    JsFunction ctor = require('atom')['BufferedProcess'];
+    return new BufferedProcess._(new JsObject(ctor, [new JsObject.jsify(options)]));
+  }
+
+  JsObject _stdin;
+
+  BufferedProcess._(JsObject object) : super(object);
+
+  /// Write the given string as utf8 bytes to the process' stdin.
+  void write(String str) {
+    // node.js ChildProcess, Writeable stream
+    if (_stdin == null) _stdin = obj['process']['stdin'];
+    _stdin.callMethod('write', [str, 'utf8']);
+  }
+
+  void kill() => invoke('kill');
+}
+
+class AtomEvent extends ProxyHolder {
+  AtomEvent(JsObject object) : super(_cvt(object));
+
+  dynamic get currentTarget => obj['currentTarget'];
+
+  // /// Return the editor that is the target of this event. Note, this is _only_
+  // /// available if an editor is the target of an event; calling this otherwise
+  // /// will return an invalid [TextEditor].
+  // TextEditor get editor {
+  //   TextEditorView view = new TextEditorView(currentTarget);
+  //   return view.getModel();
+  // }
+
+  // /// Return the currently selected file path. This call will only be meaningful
+  // /// if the event target is the Tree View.
+  // String get targetFilePath {
+  //   try {
+  //     var target = obj['target'];
+  //
+  //     // Target is an Element or a JsObject. JS interop is a mess.
+  //     if (target is Element) {
+  //       if (target.getAttribute('data-path') != null) {
+  //         return target.getAttribute('data-path');
+  //       }
+  //       if (target.children.isEmpty) return null;
+  //       Element child = target.children.first;
+  //       return child.getAttribute('data-path');
+  //     } else if (target is JsObject) {
+  //       JsObject obj = target.callMethod('querySelector', ['span']);
+  //       if (obj == null) return null;
+  //       obj = new JsObject.fromBrowserObject(obj);
+  //       return obj.callMethod('getAttribute', ['data-path']);
+  //     } else {
+  //       return null;
+  //     }
+  //   } catch (e, st) {
+  //     _logger.info('exception while handling context menu', e, st);
+  //     return null;
+  //   }
+  // }
+
+  void abortKeyBinding() => invoke('abortKeyBinding');
+
+  bool get keyBindingAborted => obj['keyBindingAborted'];
+
+  void preventDefault() => invoke('preventDefault');
+
+  bool get defaultPrevented => obj['defaultPrevented'];
+
+  void stopPropagation() => invoke('stopPropagation');
+  void stopImmediatePropagation() => invoke('stopImmediatePropagation');
+
+  bool get propagationStopped => obj['propagationStopped'];
+}
+
+JsObject _cvt(JsObject object) {
+  if (object == null) return null;
+  if (object is JsObject) return object;
+
+  // We really shouldn't have to be wrapping objects we've already gotten from
+  // JS interop.
+  return new JsObject.fromBrowserObject(object);
 }

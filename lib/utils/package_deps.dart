@@ -3,91 +3,67 @@
 
 library atom.utils.package_deps;
 
-// TODO: finish
+import 'dart:async';
 
-// import 'dart:async';
-//
-// //import 'package:logging/logging.dart';
-//
-// import '../atom.dart';
-// import 'atom_utils.dart';
-// import 'process.dart';
-//
-// // final Logger _logger = new Logger('atom.atom_package_deps');
-//
-// Future install(AtomPackage package) {
-//   return package.loadPackageJson().then((Map info) {
-//     List<String> installedPackages = atom.packages.getAvailablePackageNames();
-//     List<String> requiredPackages = info['required-packages'];
-//
-//     if (requiredPackages == null || requiredPackages.isEmpty) {
-//       return null;
-//     }
-//
-//     Set<String> toInstall = new Set.from(requiredPackages);
-//     toInstall.removeAll(installedPackages);
-//
-//     if (toInstall.isEmpty) return null;
-//
-//     // _logger.info('installing ${toInstall}');
-//
-//     return new _InstallJob(toInstall.toList()).schedule();
-//   });
-// }
-//
-// class _InstallJob extends Job {
-//   final List<String> packages;
-//   bool quitRequested = false;
-//   int errorCount = 0;
-//
-//   _InstallJob(this.packages) : super("Installing Packages");
-//
-//   bool get quiet => true;
-//
-//   Future run() {
-//     packages.sort();
-//
-//     Notification notification = atom.notifications.addInfo(name,
-//         detail: '', description: 'Installing…', dismissable: true);
-//
-//     NotificationHelper helper = new NotificationHelper(notification.view);
-//     helper.setNoWrap();
-//     helper.setRunning();
-//
-//     helper.appendText('Installing packages ${packages.join(', ')}.');
-//
-//     notification.onDidDismiss.listen((_) => quitRequested = true);
-//
-//     return Future.forEach(packages, (String name) {
-//       return _install(helper, name);
-//     }).whenComplete(() {
-//       if (errorCount == 0) {
-//         helper.showSuccess();
-//         helper.setSummary('Finished.');
-//       } else {
-//         helper.showError();
-//         helper.setSummary('Errors installing packages.');
-//       }
-//     });
-//   }
-//
-//   Future _install(NotificationHelper helper, String name) {
-//     final String apm = atom.packages.getApmPath();
-//
-//     ProcessRunner runner = new ProcessRunner(
-//         apm, args: ['--no-color', 'install', name]);
-//     return runner.execSimple().then((ProcessResult result) {
-//       if (result.stdout != null && result.stdout.isNotEmpty) {
-//         helper.appendText(result.stdout.trim());
-//       }
-//       if (result.stderr != null && result.stderr.isNotEmpty) {
-//         helper.appendText(result.stderr.trim(), stderr: true);
-//       }
-//       if (result.exit != 0) {
-//         errorCount++;
-//       } else {
-//         atom.packages.activatePackage(name);
-//       }
-//     });
-//   }
-// }
+import '../atom.dart';
+import '../node/process.dart';
+
+Future install(String packageLabel, AtomPackage package, {bool justNotify: false}) {
+  return package.loadPackageJson().then((Map info) {
+    List<String> installedPackages = atom.packages.getAvailablePackageNames();
+    List<String> requiredPackages = info['required-packages'] as List<String>;
+
+    if (requiredPackages == null || requiredPackages.isEmpty) {
+      return null;
+    }
+
+    Set<String> toInstall = new Set.from(requiredPackages);
+    toInstall.removeAll(installedPackages);
+
+    if (toInstall.isEmpty) return null;
+
+    if (justNotify) {
+      toInstall.forEach((String name) {
+        atom.notifications.addInfo(
+          "${packageLabel} recommends installing the '${name}' plugin for best results.",
+          dismissable: true
+          // , buttons: [new NotificationButton(
+          //   'Install Packages',
+          //   () => atom.workspace.open("atom://config/install")
+          // )]
+        );
+      });
+    } else {
+      return Future.forEach(toInstall, _installPackage);
+    }
+  });
+}
+
+Future _installPackage(String name) {
+  atom.notifications.addInfo('Installing ${name}…');
+
+  ProcessRunner runner = new ProcessRunner(
+    atom.packages.getApmPath(),
+    args: ['--no-color', 'install', name]
+  );
+
+  return runner.execSimple().then((ProcessResult result) {
+    if (result.exit == 0) {
+      atom.packages.activatePackage(name);
+    } else {
+      if (result.stderr != null && result.stderr.isNotEmpty) {
+        throw result.stderr.trim();
+      } else {
+        throw 'exit code ${result.exit}';
+      }
+    }
+  }).then((_) {
+    atom.notifications.addSuccess('Installed ${name}.');
+  }).catchError((e) {
+    atom.notifications.addError(
+      'Error installing ${name}:',
+      detail: '${e}',
+      dismissable: true
+    );
+  });
+}
