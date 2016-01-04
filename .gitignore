@@ -3,7 +3,6 @@
 .idea
 .packages
 .pub/
-build/
 doc/api/
 example/ddc/
 packages
