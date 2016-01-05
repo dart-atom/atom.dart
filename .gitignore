@@ -7,3 +7,7 @@ doc/api/
 example/ddc/
 packages
 pubspec.lock
+
+example/demo.dart.js
+example/demo.dart.js.deps
+example/demo.dart.js.map
