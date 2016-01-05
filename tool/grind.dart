@@ -10,7 +10,6 @@ analyze() => new PubApp.global('tuneup').runAsync(['check']);
 
 @Task()
 build() async {
-  // return buildDDC();
   return buildDart2JS();
 }
 
