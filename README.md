@@ -1,5 +1,7 @@
 # atom
 
+[![Build Status](https://travis-ci.org/dart-atom/atom.dart.svg)](https://travis-ci.org/dart-atom/atom.dart)
+
 Atom APIs for Dart.
 
 ## Usage
