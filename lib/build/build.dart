@@ -32,6 +32,11 @@ self._domRemove = function(element) {
 };
 """;
 
+/// The dart2js generated code is not expecting the Atom runtime
+/// because it's neither vanilla Chrome, nor a web-worker.
+/// This patches the generated JS to
+/// * get basic things like futures and streams to work
+/// * work around JS interop issues where we really can't access JS custom elements well
 String patchDart2JSOutput(String input) {
   final String from_1 = 'if (document.currentScript) {';
   final String from_2 = "if (typeof document.currentScript != 'undefined') {";
@@ -46,5 +51,7 @@ String patchDart2JSOutput(String input) {
     input =
         input.substring(0, index) + to + input.substring(index + from_2.length);
   }
+  if (index == -1) throw 'failed to patch JS';
+
   return _jsPrefix + input;
 }

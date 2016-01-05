@@ -392,10 +392,10 @@ class Workspace extends ProxyHolder {
 
   Workspace(JsObject object) : super(object);
 
-  // /// Returns a list of [TextEditor]s.
-  // List<TextEditor> getTextEditors() =>
-  //     new List.from(invoke('getTextEditors').map((e) => new TextEditor(e)));
-  //
+  /// Returns a list of [TextEditor]s.
+  List<TextEditor> getTextEditors() =>
+      new List.from(invoke('getTextEditors').map((e) => new TextEditor(e)));
+
   // /// Get the active item if it is a [TextEditor].
   // TextEditor getActiveTextEditor() {
   //   var result = invoke('getActiveTextEditor');
