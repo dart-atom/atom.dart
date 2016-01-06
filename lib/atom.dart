@@ -531,6 +531,7 @@ class TextEditor extends ProxyHolder {
   bool isModified() => invoke('isModified');
   bool isEmpty() => invoke('isEmpty');
   bool isNotEmpty() => !isEmpty();
+  void save() => invoke('save');
 }
 
 class BufferedProcess extends ProxyHolder {
