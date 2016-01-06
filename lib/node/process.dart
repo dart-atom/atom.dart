@@ -12,6 +12,10 @@ import 'node.dart';
 
 final Process process = new Process._();
 
+final bool isWindows = process.platform.startsWith('win');
+final bool isMac = process.platform == 'darwin';
+final bool isLinux = !isWindows && !isMac;
+
 class Process extends ProxyHolder {
   Process._() : super(require('process'));
 

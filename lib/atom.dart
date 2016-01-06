@@ -111,7 +111,7 @@ abstract class AtomPackage {
 
 class Atom extends ProxyHolder {
   CommandRegistry _commands;
-  // Config _config;
+  Config _config;
   // ContextMenuManager _contextMenu;
   // GrammarRegistry _grammars;
   NotificationManager _notifications;
@@ -122,7 +122,7 @@ class Atom extends ProxyHolder {
 
   Atom() : super(context['atom']) {
     _commands = new CommandRegistry(obj['commands']);
-    // _config = new Config(obj['config']);
+    _config = new Config(obj['config']);
     // _contextMenu = new ContextMenuManager(obj['contextMenu']);
     // _grammars = new GrammarRegistry(obj['grammars']);
     _notifications = new NotificationManager(obj['notifications']);
@@ -133,7 +133,7 @@ class Atom extends ProxyHolder {
   }
 
   CommandRegistry get commands => _commands;
-  // Config get config => _config;
+  Config get config => _config;
   // ContextMenuManager get contextMenu => _contextMenu;
   // GrammarRegistry get grammars => _grammars;
   NotificationManager get notifications => _notifications;
@@ -193,6 +193,38 @@ class CommandRegistry extends ProxyHolder {
   /// Simulate the dispatch of a command on a DOM node.
   void dispatch(Element target, String commandName, {Map options}) =>
       invoke('dispatch', target, commandName, options);
+}
+
+class Config extends ProxyHolder {
+  Config(JsObject object) : super(object);
+
+  /// [keyPath] should be in the form `pluginid.keyid` - e.g. `${pluginId}.sdkLocation`.
+  dynamic getValue(String keyPath, {scope}) {
+    Map options;
+    if (scope != null) options = {'scope': scope};
+    return invoke('get', keyPath, options);
+  }
+
+  // bool getBoolValue(String keyPath, {scope}) =>
+  //     getValue(keyPath, scope: scope) == true;
+
+  // void setValue(String keyPath, dynamic value) => invoke('set', keyPath, value);
+
+  /// Add a listener for changes to a given key path. This will immediately call
+  /// your callback with the current value of the config entry.
+  Disposable observe(String keyPath, Map options, void callback(value)) {
+    if (options == null) options = {};
+    return new JsDisposable(invoke('observe', keyPath, options, callback));
+  }
+
+  // Stream<dynamic> onDidChange(String keyPath, [Map options]) {
+  //   Disposable disposable;
+  //   StreamController controller = new StreamController.broadcast(onCancel: () {
+  //     if (disposable != null) disposable.dispose();
+  //   });
+  //   disposable = observe(keyPath, options, (e) => controller.add(e));
+  //   return controller.stream;
+  // }
 }
 
 /// A notification manager used to create notifications to be shown to the user.
@@ -531,6 +563,7 @@ class TextEditor extends ProxyHolder {
   bool isModified() => invoke('isModified');
   bool isEmpty() => invoke('isEmpty');
   bool isNotEmpty() => !isEmpty();
+  void save() => invoke('save');
 }
 
 class BufferedProcess extends ProxyHolder {
