@@ -26,4 +26,9 @@ buildDart2JS() async {
 bot() => null;
 
 @Task('Analyze with DDC')
-ddc() => new DevCompiler().analyzeAsync(getFile('example/demo.dart'));
+ddc() {
+  return new DevCompiler().analyzeAsync(
+    getFile('example/demo.dart'),
+    htmlReport: true
+  );
+}
