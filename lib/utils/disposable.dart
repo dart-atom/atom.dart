@@ -1,6 +1,8 @@
 // Copyright (c) 2015, Devon Carew. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:logging/logging.dart';
 
 final Logger _logger = new Logger('disposable');
@@ -37,4 +39,41 @@ class Disposables implements Disposable {
 
     _disposables.clear();
   }
+}
+
+class StreamSubscriptions implements Disposable {
+  final bool catchExceptions;
+
+  List<StreamSubscription> _subscriptions = [];
+
+  StreamSubscriptions({this.catchExceptions});
+
+  void add(StreamSubscription subscription) => _subscriptions.add(subscription);
+
+  bool remove(StreamSubscription subscription) =>
+      _subscriptions.remove(subscription);
+
+  void cancel() {
+    for (StreamSubscription subscription in _subscriptions) {
+      if (catchExceptions) {
+        try {
+          subscription.cancel();
+        } catch (e, st) {
+          _logger.severe('exception during subscription cancel', e, st);
+        }
+      } else {
+        subscription.cancel();
+      }
+    }
+
+    _subscriptions.clear();
+  }
+
+  void dispose() => cancel();
+}
+
+class DisposeableSubscription implements Disposable {
+  final StreamSubscription sub;
+  DisposeableSubscription(this.sub);
+  void dispose() { sub.cancel(); }
 }

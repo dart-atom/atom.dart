@@ -34,8 +34,22 @@ void registerPackage(AtomPackage package) {
 
   final JsObject exports = context['module']['exports'];
 
-  exports['activate'] = _package.activate;
-  exports['deactivate'] = _package.deactivate;
+  exports['activate'] = ([state]) {
+    try {
+      _package.activate(state);
+    } catch (e, st) {
+      print('${e}');
+      print('${st}');
+    }
+  };
+  exports['deactivate'] = () {
+    try {
+      _package.deactivate();
+    } catch (e, st) {
+      print('${e}');
+      print('${st}');
+    }
+  };
   exports['config'] = jsify(_package.config());
   exports['serialize'] = _package.serialize;
 
