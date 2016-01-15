@@ -16,7 +16,7 @@ class Disposables implements Disposable {
 
   List<Disposable> _disposables = [];
 
-  Disposables({this.catchExceptions});
+  Disposables({this.catchExceptions: true});
 
   void add(Disposable disposable) => _disposables.add(disposable);
 
@@ -46,7 +46,7 @@ class StreamSubscriptions implements Disposable {
 
   List<StreamSubscription> _subscriptions = [];
 
-  StreamSubscriptions({this.catchExceptions});
+  StreamSubscriptions({this.catchExceptions: true});
 
   void add(StreamSubscription subscription) => _subscriptions.add(subscription);
 

@@ -72,16 +72,30 @@ void registerPackage(AtomPackage package) {
   package._registeredMethods = null;
 }
 
-// void registerPackage(AtomPackage package) {
-//   Map packageInfo = {
-//     'activate': package.activate,
-//     'deactivate': package.deactivate,
-//     'config': package.config(),
-//     'serialize': package.serialize
-//   };
-//
-//   context[package.id] = jsify(packageInfo);
-// }
+void registerPackageDDC(AtomPackage package) {
+  Map packageInfo = {
+    'activate': ([state]) {
+      try {
+        package.activate(state);
+      } catch (e, st) {
+        print('${e}');
+        print('${st}');
+      }
+    },
+    'deactivate': () {
+      try {
+        package.deactivate();
+      } catch (e, st) {
+        print('${e}');
+        print('${st}');
+      }
+    },
+    'config': package.config(),
+    'serialize': package.serialize
+  };
+
+  context[package.id] = jsify(packageInfo);
+}
 
 abstract class AtomPackage {
   Map<String, Function> _registeredMethods = {};
@@ -219,10 +233,10 @@ class Config extends ProxyHolder {
     return invoke('get', keyPath, options);
   }
 
-  // bool getBoolValue(String keyPath, {scope}) =>
-  //     getValue(keyPath, scope: scope) == true;
+  bool getBoolValue(String keyPath, {scope}) =>
+      getValue(keyPath, scope: scope) == true;
 
-  // void setValue(String keyPath, dynamic value) => invoke('set', keyPath, value);
+  void setValue(String keyPath, dynamic value) => invoke('set', keyPath, value);
 
   /// Add a listener for changes to a given key path. This will immediately call
   /// your callback with the current value of the config entry.
