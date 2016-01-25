@@ -6,7 +6,7 @@ library atom;
 
 import 'dart:async';
 import 'dart:convert' show JSON;
-import 'dart:html' show Element, HttpRequest;
+import 'dart:html' show CustomEvent, Element, HttpRequest;
 
 import 'package:logging/logging.dart';
 
@@ -640,7 +640,19 @@ class BufferedProcess extends ProxyHolder {
 }
 
 class AtomEvent extends ProxyHolder {
-  AtomEvent(JsObject object) : super(_cvt(object));
+  // With dart2js, this gets passed in as a JsObject (most times?). With DDC, its
+  // passed in as a CustomEvent. When we try and do the instanceof check, we get a
+  // NPE out of the instanceOf/isSubtype machinery because html.CustomEvent returns
+  // undefined.
+  factory AtomEvent(dynamic object) {
+    if (object is JsObject) {
+      return new AtomEvent._fromJsObject(object);
+    } else {
+      return new _AtomEventCustomEvent(object);
+    }
+  }
+
+  AtomEvent._fromJsObject(JsObject object) : super(_cvt(object));
 
   dynamic get currentTarget => obj['currentTarget'];
 
@@ -692,6 +704,43 @@ class AtomEvent extends ProxyHolder {
   void stopImmediatePropagation() => invoke('stopImmediatePropagation');
 
   bool get propagationStopped => obj['propagationStopped'];
+}
+
+/// An AtomEvent that wraps a CustomEvent.
+class _AtomEventCustomEvent implements AtomEvent {
+  // TODO: This should be html.CustomEvent.
+  // https://github.com/dart-lang/dev_compiler/issues/423
+  final dynamic event;
+
+  _AtomEventCustomEvent(this.event);
+
+  void abortKeyBinding() => (event as dynamic).abortKeyBinding();
+
+  dynamic get currentTarget => event.currentTarget;
+
+  bool get defaultPrevented => event.defaultPrevented;
+
+  Stream eventStream(String eventName) {
+    throw 'unimplemented';
+  }
+
+  invoke(String method, [arg1, arg2, arg3]) {
+    throw 'unimplemented';
+  }
+
+  bool get keyBindingAborted => (event as dynamic).keyBindingAborted;
+
+  JsObject get obj {
+    throw 'unimplemented';
+  }
+
+  void preventDefault() => event.preventDefault();
+
+  bool get propagationStopped => (event as dynamic).propagationStopped;
+
+  void stopImmediatePropagation() => event.stopImmediatePropagation();
+
+  void stopPropagation() => event.stopPropagation();
 }
 
 JsObject _cvt(JsObject object) {
