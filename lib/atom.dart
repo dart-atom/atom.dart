@@ -456,12 +456,12 @@ class Workspace extends ProxyHolder {
   List<TextEditor> getTextEditors() =>
       new List.from(invoke('getTextEditors').map((e) => new TextEditor(e)));
 
-  // /// Get the active item if it is a [TextEditor].
-  // TextEditor getActiveTextEditor() {
-  //   var result = invoke('getActiveTextEditor');
-  //   return result == null ? null : new TextEditor(result);
-  // }
-  //
+  /// Get the active item if it is a [TextEditor].
+  TextEditor getActiveTextEditor() {
+    var result = invoke('getActiveTextEditor');
+    return result == null ? null : new TextEditor(result);
+  }
+
   // /// Invoke the given callback with all current and future text editors in the
   // /// workspace.
   // Disposable observeTextEditors(void callback(TextEditor editor)) {
