@@ -640,10 +640,8 @@ class BufferedProcess extends ProxyHolder {
 }
 
 class AtomEvent extends ProxyHolder {
-  // With dart2js, this gets passed in as a JsObject (most times?). With DDC, its
-  // passed in as a CustomEvent. When we try and do the instanceof check, we get a
-  // NPE out of the instanceOf/isSubtype machinery because html.CustomEvent returns
-  // undefined.
+  // With dart2js, this gets passed in as a JsObject (most times?). With DDC,
+  // it's passed in as a CustomEvent.
   factory AtomEvent(dynamic object) {
     if (object is JsObject) {
       return new AtomEvent._fromJsObject(object);
@@ -708,8 +706,8 @@ class AtomEvent extends ProxyHolder {
 
 /// An AtomEvent that wraps a CustomEvent.
 class _AtomEventCustomEvent implements AtomEvent {
-  // TODO: This should be html.CustomEvent.
-  // https://github.com/dart-lang/dev_compiler/issues/423
+  // TODO(devoncarew): We get an exception from DDC here if we use `CustomEvent`.
+  // CastError: Casting value of type function CustomEvent() { [native code] } to incompatible type CustomEvent
   final dynamic event;
 
   _AtomEventCustomEvent(this.event);
