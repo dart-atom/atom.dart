@@ -42,7 +42,7 @@ Future install(String packageLabel, AtomPackage package, {bool justNotify: false
 Future _installPackage(String name) {
   atom.notifications.addInfo('Installing ${name}…');
 
-  ProcessRunner runner = new ProcessRunner(
+  ProcessRunner runner = new ProcessRunner.underShell(
     atom.packages.getApmPath(),
     args: ['--no-color', 'install', name]
   );
