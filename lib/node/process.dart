@@ -73,23 +73,24 @@ class ProcessRunner {
       // This shouldn't be trusted for security.
       final RegExp shellEscape = new RegExp('(["\'| \\\$!\\(\\)\\[\\]])');
 
-      final String shell = process.env('SHELL');
+      String shell = process.env('SHELL');
 
       if (shell == null) {
         _logger.warning("Couldn't identify the user's shell");
-      } else {
-        if (args != null) {
-          // Escape the arguments.
-          Iterable escaped = args.map((String arg) {
-            return "'${arg.replaceAllMapped(shellEscape, (Match m) => '\\' + m.group(0))}'";
-          });
-          command += ' ' + (escaped.join(' '));
-        }
-
-        args = ['-l', '-c', command];
-
-        return new ProcessRunner(shell, args: args, cwd: cwd, env: env);
+        shell = '/bin/bash';
       }
+
+      if (args != null) {
+        // Escape the arguments.
+        Iterable escaped = args.map((String arg) {
+          return "'${arg.replaceAllMapped(shellEscape, (Match m) => '\\' + m.group(0))}'";
+        });
+        command += ' ' + (escaped.join(' '));
+      }
+
+      args = ['-l', '-c', command];
+
+      return new ProcessRunner(shell, args: args, cwd: cwd, env: env);
     }
 
     return new ProcessRunner(command, args: args, cwd: cwd, env: env);
