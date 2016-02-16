@@ -27,10 +27,6 @@ Future install(String packageLabel, AtomPackage package, {bool justNotify: false
         atom.notifications.addInfo(
           "${packageLabel} recommends installing the '${name}' plugin for best results.",
           dismissable: true
-          // , buttons: [new NotificationButton(
-          //   'Install Packages',
-          //   () => atom.workspace.open("atom://config/install")
-          // )]
         );
       });
     } else {
@@ -42,7 +38,7 @@ Future install(String packageLabel, AtomPackage package, {bool justNotify: false
 Future _installPackage(String name) {
   atom.notifications.addInfo('Installing ${name}…');
 
-  ProcessRunner runner = new ProcessRunner.underShell(
+  ProcessRunner runner = new ProcessRunner(
     atom.packages.getApmPath(),
     args: ['--no-color', 'install', name]
   );
