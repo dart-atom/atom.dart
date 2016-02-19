@@ -706,9 +706,7 @@ class AtomEvent extends ProxyHolder {
 
 /// An AtomEvent that wraps a CustomEvent.
 class _AtomEventCustomEvent implements AtomEvent {
-  // TODO(devoncarew): We get an exception from DDC here if we use `CustomEvent`.
-  // CastError: Casting value of type function CustomEvent() { [native code] } to incompatible type CustomEvent
-  final dynamic event;
+  final CustomEvent event;
 
   _AtomEventCustomEvent(this.event);
 
