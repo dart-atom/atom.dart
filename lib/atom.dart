@@ -144,7 +144,7 @@ class Atom extends ProxyHolder {
   // GrammarRegistry _grammars;
   NotificationManager _notifications;
   PackageManager _packages;
-  // Project _project;
+  Project _project;
   ViewRegistry _views;
   Workspace _workspace;
 
@@ -155,7 +155,7 @@ class Atom extends ProxyHolder {
     // _grammars = new GrammarRegistry(obj['grammars']);
     _notifications = new NotificationManager(obj['notifications']);
     _packages = new PackageManager(obj['packages']);
-    // _project = new Project(obj['project']);
+    _project = new Project(obj['project']);
     _views = new ViewRegistry(obj['views']);
     _workspace = new Workspace(obj['workspace']);
   }
@@ -166,7 +166,7 @@ class Atom extends ProxyHolder {
   // GrammarRegistry get grammars => _grammars;
   NotificationManager get notifications => _notifications;
   PackageManager get packages => _packages;
-  // Project get project => _project;
+  Project get project => _project;
   ViewRegistry get views => _views;
   Workspace get workspace => _workspace;
 
@@ -474,10 +474,10 @@ class Workspace extends ProxyHolder {
   //   var disposable = invoke('observeActivePaneItem', (item) => callback(item));
   //   return new JsDisposable(disposable);
   // }
-  //
-  // Panel addModalPanel({dynamic item, bool visible, int priority}) =>
-  //     new Panel(invoke('addModalPanel', _panelOptions(item, visible, priority)));
-  //
+
+  Panel addModalPanel({dynamic item, bool visible, int priority}) =>
+      new Panel(invoke('addModalPanel', _panelOptions(item, visible, priority)));
+
   // Panel addTopPanel({dynamic item, bool visible, int priority}) =>
   //     new Panel(invoke('addTopPanel', _panelOptions(item, visible, priority)));
   //
@@ -529,13 +529,49 @@ class Workspace extends ProxyHolder {
   //     _logger.info('exception calling saveAll', e);
   //   }
   // }
-  //
-  // Map _panelOptions(dynamic item, bool visible, int priority) {
-  //   Map options = {'item': item};
-  //   if (visible != null) options['visible'] = visible;
-  //   if (priority != null) options['priority'] = priority;
-  //   return options;
+
+  Map _panelOptions(dynamic item, bool visible, int priority) {
+    Map options = {'item': item};
+    if (visible != null) options['visible'] = visible;
+    if (priority != null) options['priority'] = priority;
+    return options;
+  }
+}
+
+/// Represents a project that's opened in Atom.
+class Project extends ProxyHolder {
+  Project(JsObject object) : super(object);
+
+  /// Fire an event when the project paths change. Each event is an list of
+  /// project paths.
+  Stream<List<String>> get onDidChangePaths => eventStream('onDidChangePaths')
+      as Stream<List<String>>;
+
+  List<String> getPaths() => new List.from(invoke('getPaths'));
+
+  // List<Directory> getDirectories() {
+  //   return new List.from(invoke('getDirectories').map((dir) => new Directory(dir)));
   // }
+
+  /// Add a path to the project's list of root paths.
+  void addPath(String path) => invoke('addPath', path);
+
+  /// Remove a path from the project's list of root paths.
+  void removePath(String path) => invoke('removePath', path);
+
+  /// Get the path to the project directory that contains the given path, and
+  /// the relative path from that project directory to the given path. Returns
+  /// an array with two elements: `projectPath` - the string path to the project
+  /// directory that contains the given path, or `null` if none is found.
+  /// `relativePath` - the relative path from the project directory to the given
+  /// path.
+  List<String> relativizePath(String fullPath) =>
+      new List.from(invoke('relativizePath', fullPath));
+
+  /// Determines whether the given path (real or symbolic) is inside the
+  /// project's directory. This method does not actually check if the path
+  /// exists, it just checks their locations relative to each other.
+  bool contains(String pathToCheck) => invoke('contains', pathToCheck);
 }
 
 /// Package manager for coordinating the lifecycle of Atom packages. Packages
@@ -569,6 +605,19 @@ class PackageManager extends ProxyHolder {
   }
 }
 
+class Panel extends ProxyHolder {
+  Panel(JsObject object) : super(object);
+
+  Stream<bool> get onDidChangeVisible => eventStream('onDidChangeVisible') as Stream<bool>;
+  Stream<Panel> get onDidDestroy =>
+      eventStream('onDidDestroy').map((obj) => new Panel(obj)) as Stream<Panel>;
+
+  bool isVisible() => invoke('isVisible');
+  void show() => invoke('show');
+  void hide() => invoke('hide');
+  void destroy() => invoke('destroy');
+}
+
 class TextEditor extends ProxyHolder {
   TextEditor(JsObject object) : super(_cvt(object));
 
@@ -588,9 +637,13 @@ class TextEditor extends ProxyHolder {
   String getTitle() => invoke('getTitle');
   String getLongTitle() => invoke('getLongTitle');
   String getPath() => invoke('getPath');
+  String getText() => invoke('getText');
   bool isModified() => invoke('isModified');
   bool isEmpty() => invoke('isEmpty');
   bool isNotEmpty() => !isEmpty();
+  void moveToEndOfLine() => invoke('moveToEndOfLine');
+  String selectAll() => invoke('selectAll');
+  void selectToBeginningOfWord() => invoke('selectToBeginningOfWord');
   void save() => invoke('save');
 }
 
