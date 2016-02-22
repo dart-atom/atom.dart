@@ -610,7 +610,7 @@ class Panel extends ProxyHolder {
 
   Stream<bool> get onDidChangeVisible => eventStream('onDidChangeVisible') as Stream<bool>;
   Stream<Panel> get onDidDestroy =>
-      eventStream('onDidDestroy').map((obj) => new Panel(obj)) as Stream<Panel>;
+      eventStream('onDidDestroy').map((obj) => new Panel(obj));
 
   bool isVisible() => invoke('isVisible');
   void show() => invoke('show');
