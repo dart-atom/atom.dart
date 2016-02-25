@@ -17,6 +17,13 @@ class FS extends ProxyHolder {
 
   final String separator = isWindows ? r'\' : '/';
 
+  /// Return the name of the file for the given path.
+  String basename(String path) {
+    if (path.endsWith(separator)) path = path.substring(0, path.length - 1);
+    int index = path.lastIndexOf(separator);
+    return index == -1 ? path : path.substring(index + 1);
+  }
+
   /// Return the parent of the given file path or entry.
   String dirname(entry) {
     if (entry is Entry) return entry.getParent().path;
@@ -30,6 +37,14 @@ class FS extends ProxyHolder {
     if (arg2 != null) {
       path = '${path}${separator}${arg2}';
       if (arg3 != null) path = '${path}${separator}${arg3}';
+    }
+    return path;
+  }
+
+  String relativize(String root, String path) {
+    if (path.startsWith(root)) {
+      path = path.substring(root.length);
+      if (path.startsWith(separator)) path = path.substring(1);
     }
     return path;
   }

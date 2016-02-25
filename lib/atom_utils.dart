@@ -7,6 +7,7 @@ library atom_utils;
 import 'dart:async';
 import 'dart:html' show CustomEvent, DivElement, Element, HttpRequest, Node, NodeTreeSanitizer;
 
+import 'package:atom/node/process.dart';
 import 'package:logging/logging.dart';
 
 import 'atom.dart';
@@ -68,4 +69,30 @@ Future<String> promptUser(String prompt,
 class TrustedHtmlTreeSanitizer implements NodeTreeSanitizer {
   const TrustedHtmlTreeSanitizer();
   void sanitizeTree(Node node) { }
+}
+
+/// Look for the given executable; throw an error if we can't find it.
+///
+/// Note: on Windows, this assumes that we're looking for an `.exe` unless
+/// `isBatchScript` is specified.
+Future<String> which(String execName, {bool isBatchScript: false}) {
+  if (isMac) {
+    // /bin/bash -l -c 'which dart'
+    String shell = process.env('SHELL') ?? '/bin/bash';
+    return exec(shell, ['-l', '-c', 'which ${execName}']).then((String result) {
+      if (result.contains('\n')) result = result.split('\n').first.trim();
+      return result;
+    }) as Future<String>;
+  } else if (isWindows) {
+    String ext = isBatchScript ? 'bat' : 'exe';
+    return exec('where', ['${execName}.${ext}']).then((String result) {
+      if (result.contains('\n')) result = result.split('\n').first.trim();
+      return result;
+    }) as Future<String>;
+  } else {
+    return exec('which', [execName]).then((String result) {
+      if (result.contains('\n')) result = result.split('\n').first.trim();
+      return result;
+    }) as Future<String>;
+  }
 }
