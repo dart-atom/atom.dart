@@ -13,9 +13,17 @@ import 'process.dart';
 final FS fs = new FS._();
 
 class FS extends ProxyHolder {
+  JsObject _os = require('os');
+
   FS._() : super(require('fs'));
 
   final String separator = isWindows ? r'\' : '/';
+
+  // TODO(devoncarew): [homedir] can throw (or isn't available?) on some platforms.
+  String get homedir => _os.callMethod('homedir');
+
+  /// Returns the operating system's default directory for temp files.
+  String get tmpdir => _os.callMethod('tmpdir');
 
   /// Return the name of the file for the given path.
   String basename(String path) {
