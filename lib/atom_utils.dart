@@ -79,7 +79,14 @@ Future<String> which(String execName, {bool isBatchScript: false}) {
   if (isMac) {
     // /bin/bash -l -c 'which dart'
     String shell = process.env('SHELL') ?? '/bin/bash';
-    return exec(shell, ['-l', '-c', 'which ${execName}']).then((String result) {
+
+    List<String> args = [];
+
+    // bash, zsh, tcsh, csh
+    if (shell != 'csh' && shell != 'tcsh') args.add('-l');
+
+    args.addAll(['-c', 'which ${execName}']);
+    return exec(shell, args).then((String result) {
       if (result.contains('\n')) result = result.split('\n').last.trim();
       return result;
     }) as Future<String>;
