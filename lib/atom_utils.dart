@@ -80,7 +80,7 @@ Future<String> which(String execName, {bool isBatchScript: false}) {
     // /bin/bash -l -c 'which dart'
     String shell = process.env('SHELL') ?? '/bin/bash';
     return exec(shell, ['-l', '-c', 'which ${execName}']).then((String result) {
-      if (result.contains('\n')) result = result.split('\n').first.trim();
+      if (result.contains('\n')) result = result.split('\n').last.trim();
       return result;
     }) as Future<String>;
   } else if (isWindows) {
