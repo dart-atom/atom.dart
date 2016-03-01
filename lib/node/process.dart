@@ -88,12 +88,16 @@ class ProcessRunner {
         command += ' ' + (escaped.join(' '));
       }
 
-      args = ['-l', '-c', command];
+      args = [];
+
+      // bash, zsh, tcsh, csh
+      if (shell != 'csh' && shell != 'tcsh') args.add('-l');
+      args.addAll(['-c', command]);
 
       return new ProcessRunner(shell, args: args, cwd: cwd, env: env);
+    } else {
+      return new ProcessRunner(command, args: args, cwd: cwd, env: env);
     }
-
-    return new ProcessRunner(command, args: args, cwd: cwd, env: env);
   }
 
   bool get started => _process != null;
@@ -123,15 +127,15 @@ class ProcessRunner {
   Future<int> execStreaming() {
     if (_process != null) throw new StateError('exec can only be called once');
 
-    // _logger.fine('exec: ${command} ${args == null ? "" : args.join(" ")}'
-    //     '${cwd == null ? "" : " (cwd=${cwd})"}');
+    _logger.fine('exec: ${command} ${args == null ? "" : args.join(" ")}'
+        '${cwd == null ? "" : " (cwd=${cwd})"}');
 
     try {
       _process = BufferedProcess.create(command, args: args, cwd: cwd, env: env,
           stdout: (s) => _stdoutController.add(s),
           stderr: (s) => _stderrController.add(s),
           exit: (code) {
-            // _logger.fine('exit code: ${code} (${command})');
+            _logger.fine('exit code: ${code} (${command})');
             _exit = code;
             if (!_exitCompleter.isCompleted) _exitCompleter.complete(code);
           },
