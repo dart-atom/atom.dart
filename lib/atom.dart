@@ -245,14 +245,16 @@ class Config extends ProxyHolder {
     return new JsDisposable(invoke('observe', keyPath, options, callback));
   }
 
-  // Stream<dynamic> onDidChange(String keyPath, [Map options]) {
-  //   Disposable disposable;
-  //   StreamController controller = new StreamController.broadcast(onCancel: () {
-  //     if (disposable != null) disposable.dispose();
-  //   });
-  //   disposable = observe(keyPath, options, (e) => controller.add(e));
-  //   return controller.stream;
-  // }
+  /// This acts similarly to [observe] - it will invoke once on first call, and
+  /// then subsequnetly on each config change.
+  Stream<dynamic> onDidChange(String keyPath, [Map options]) {
+    Disposable disposable;
+    StreamController controller = new StreamController.broadcast(onCancel: () {
+      disposable?.dispose();
+    });
+    disposable = observe(keyPath, options, (e) => controller.add(e));
+    return controller.stream;
+  }
 }
 
 /// A notification manager used to create notifications to be shown to the user.
