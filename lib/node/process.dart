@@ -40,15 +40,31 @@ class Process extends ProxyHolder {
   }
 }
 
-Future<String> exec(String cmd, [List<String> args]) {
-  ProcessRunner runner = new ProcessRunner(cmd, args: args);
+Future<String> exec(String command, [List<String> args]) {
+  ProcessRunner runner = new ProcessRunner(command, args: args);
   return runner.execSimple().then((ProcessResult result) {
     if (result.exit == 0) return result.stdout;
     throw result.exit;
   }) as Future<String>;
 }
 
+/// Execute the given command synchronously and return the stdout. If the
+/// process has a non-zero exit code, this method will throw.
+String execSync(String command) {
+  try {
+    String result = require('child_process').callMethod('execSync', [command]);
+    if (result == null) return null;
+    result = '$result'.trim();
+    return result.isEmpty ? null : result;
+  } catch (error) {
+    // https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options
+    throw '$error';
+  }
+}
+
 class ProcessRunner {
+  static _MacShellWrangler _shellWrangler;
+
   final String command;
   final List<String> args;
   final String cwd;
@@ -63,41 +79,22 @@ class ProcessRunner {
 
   ProcessRunner(this.command, {this.args, this.cwd, this.env});
 
-  /// Execute the command under the user's preferred shell. On the Mac, this
-  /// will determine the shell from the `$SHELL` env variable. On other platforms,
-  /// this will call through to the normal [ProcessRunner] constructor.
+  /// Execute the command using the environment of the user's preferred shell.
+  /// On the Mac, this will determine the shell from the `$SHELL` env variable.
+  /// On other platforms, this will call through to the normal [ProcessRunner]
+  /// constructor.
   factory ProcessRunner.underShell(String command, {
     List<String> args, String cwd, Map<String, String> env
   }) {
-    if (isMac) {
-      // This shouldn't be trusted for security.
-      final RegExp shellEscape = new RegExp('(["\'| \\\$!\\(\\)\\[\\]])');
-
-      String shell = process.env('SHELL');
-
-      if (shell == null) {
-        _logger.warning("Couldn't identify the user's shell");
-        shell = '/bin/bash';
-      }
-
-      if (args != null) {
-        // Escape the arguments.
-        Iterable escaped = args.map((String arg) {
-          return "'${arg.replaceAllMapped(shellEscape, (Match m) => '\\' + m.group(0))}'";
-        });
-        command += ' ' + (escaped.join(' '));
-      }
-
-      args = [];
-
-      // bash, zsh, tcsh, csh
-      if (shell != 'csh' && shell != 'tcsh') args.add('-l');
-      args.addAll(['-c', command]);
-
-      return new ProcessRunner(shell, args: args, cwd: cwd, env: env);
-    } else {
-      return new ProcessRunner(command, args: args, cwd: cwd, env: env);
+    if (isMac && _shellWrangler == null) {
+      _shellWrangler = new _MacShellWrangler();
     }
+
+    if (isMac && _shellWrangler.isNecessary) {
+      return new ProcessRunner(command, args: args, cwd: cwd, env: _shellWrangler.env);
+    }
+
+    return new ProcessRunner(command, args: args, cwd: cwd, env: env);
   }
 
   bool get started => _process != null;
@@ -154,7 +151,6 @@ class ProcessRunner {
   void write(String str) => _process.write(str);
 
   Future<int> kill() {
-    // _logger.fine('kill: ${command} ');
     if (_process != null) _process.kill();
     new Future.delayed(new Duration(milliseconds: 50), () {
       if (!_exitCompleter.isCompleted) _exitCompleter.complete(0);
@@ -179,4 +175,54 @@ class ProcessResult {
   ProcessResult(this.exit, this.stdout, this.stderr);
 
   String toString() => '${exit}';
+}
+
+/// Shell out to query the given environment variable. This is slower but more
+/// reliable than the node env map.
+String queryEnv(String variable) {
+  try {
+    return execSync('echo \$$variable');
+  } catch (e) {
+    return null;
+  }
+}
+
+/// This class exists to help manage situations where Atom is running in an
+/// environment without a properly set up environment (env and PATH variables).
+class _MacShellWrangler {
+  String _currentShell;
+  String _targetShell;
+  Map<String, String> _env = {};
+
+  _MacShellWrangler() {
+    _currentShell = execSync(r'echo $0');
+    _targetShell = execSync(r'echo $SHELL');
+
+    if (isNecessary) {
+      String result;
+      if (_targetShell.endsWith('/csh') || _targetShell.endsWith('/tcsh')) {
+        // csh and tcsh don't support -l
+        result = execSync("$_targetShell -c 'printenv'");
+      } else {
+        result = execSync("$_targetShell -l -c 'printenv'");
+      }
+
+      for (String line in result.split('\n')) {
+        int index = line.indexOf('=');
+        if (index != -1) {
+          _env[line.substring(0, index)] = line.substring(index + 1);
+        }
+      }
+    }
+  }
+
+  bool get isNecessary => _currentShell == '/bin/sh';
+
+  String get targetShell => _targetShell;
+
+  String getEnv(String variable) => _env[variable];
+
+  Map<String, String> get env => _env;
+
+  String toString() => '$_currentShell $_targetShell $_env';
 }
