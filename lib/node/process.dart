@@ -40,8 +40,8 @@ class Process extends ProxyHolder {
   }
 }
 
-Future<String> exec(String command, [List<String> args]) {
-  ProcessRunner runner = new ProcessRunner(command, args: args);
+Future<String> exec(String command, [List<String> args, Map<String, String> env]) {
+  ProcessRunner runner = new ProcessRunner(command, args: args, env: env);
   return runner.execSimple().then((ProcessResult result) {
     if (result.exit == 0) return result.stdout;
     throw result.exit;
@@ -63,7 +63,7 @@ String execSync(String command) {
 }
 
 class ProcessRunner {
-  static _MacShellWrangler _shellWrangler;
+  static MacShellWrangler _shellWrangler;
 
   final String command;
   final List<String> args;
@@ -87,7 +87,7 @@ class ProcessRunner {
     List<String> args, String cwd, Map<String, String> env
   }) {
     if (isMac && _shellWrangler == null) {
-      _shellWrangler = new _MacShellWrangler();
+      _shellWrangler = new MacShellWrangler();
     }
 
     if (isMac && _shellWrangler.isNecessary) {
@@ -189,12 +189,12 @@ String queryEnv(String variable) {
 
 /// This class exists to help manage situations where Atom is running in an
 /// environment without a properly set up environment (env and PATH variables).
-class _MacShellWrangler {
+class MacShellWrangler {
   String _currentShell;
   String _targetShell;
-  Map<String, String> _env = {};
+  Map<String, String> _env;
 
-  _MacShellWrangler() {
+  MacShellWrangler() {
     _currentShell = execSync(r'echo $0');
     _targetShell = execSync(r'echo $SHELL');
 
@@ -206,6 +206,8 @@ class _MacShellWrangler {
       } else {
         result = execSync("$_targetShell -l -c 'printenv'");
       }
+
+      _env = {};
 
       for (String line in result.split('\n')) {
         int index = line.indexOf('=');
@@ -220,8 +222,10 @@ class _MacShellWrangler {
 
   String get targetShell => _targetShell;
 
-  String getEnv(String variable) => _env[variable];
+  String getEnv(String variable) => _env == null ? null : _env[variable];
 
+  /// Return the target shell's environment. This will be `null` if the
+  /// `isNecessary` is false.
   Map<String, String> get env => _env;
 
   String toString() => '$_currentShell $_targetShell $_env';

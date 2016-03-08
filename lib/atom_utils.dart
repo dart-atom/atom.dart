@@ -71,24 +71,19 @@ class TrustedHtmlTreeSanitizer implements NodeTreeSanitizer {
   void sanitizeTree(Node node) { }
 }
 
+MacShellWrangler _shellWrangler;
+
 /// Look for the given executable; throw an error if we can't find it.
 ///
 /// Note: on Windows, this assumes that we're looking for an `.exe` unless
 /// `isBatchScript` is specified.
 Future<String> which(String execName, {bool isBatchScript: false}) {
   if (isMac) {
-    // /bin/bash -l -c 'which dart'
-    String shell = process.env('SHELL') ?? '/bin/bash';
+    if (_shellWrangler == null) _shellWrangler = new MacShellWrangler();
 
-    List<String> args = [];
-
-    // bash, zsh, tcsh, csh
-    if (shell != 'csh' && shell != 'tcsh') args.add('-l');
-
-    args.addAll(['-c', 'which ${execName}']);
-    return exec(shell, args).then((String result) {
+    return exec('which', [execName], _shellWrangler.env).then((String result) {
       result = result.trim();
-      if (result.contains('\n')) result = result.split('\n').last;
+      if (result.contains('\n')) result = result.split('\n').first;
       return result;
     }) as Future<String>;
   } else if (isWindows) {
