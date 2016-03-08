@@ -189,6 +189,15 @@ String queryEnv(String variable) {
 
 /// This class exists to help manage situations where Atom is running in an
 /// environment without a properly set up environment (env and PATH variables).
+///
+/// When Atom is launched from the Dock on macos, it is run in the borne shell
+/// (/bin/sh). A user's default shell on the mac is bash, so the borne shell
+/// will have none of the user's environment variables or path set up. Atom will
+/// not be able to locate or launch many user command-line applications. In
+/// order to fix this, we:
+/// - detect the current shell and the user's preferred shell
+/// - gather all the env variables from the preferred shell
+/// - when exec'ing a process, pass in the env variables discovered from the user's shell
 class MacShellWrangler {
   String _currentShell;
   String _targetShell;

@@ -80,7 +80,7 @@ class JsDisposable extends ProxyHolder implements Disposable {
 }
 
 class Promise<T> extends ProxyHolder {
-  static _jsObjectFromFuture(Future future) {
+  static JsObject _jsObjectFromFuture(Future future) {
     // var promise = new Promise(function(resolve, reject) {
     //   // do a thing, possibly async, then…
     //
