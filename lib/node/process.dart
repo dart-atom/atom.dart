@@ -195,8 +195,8 @@ class MacShellWrangler {
   Map<String, String> _env;
 
   MacShellWrangler() {
-    _currentShell = execSync(r'echo $0');
-    _targetShell = execSync(r'echo $SHELL');
+    _currentShell = queryEnv('0');
+    _targetShell = queryEnv('SHELL');
 
     if (isNecessary) {
       String result;
