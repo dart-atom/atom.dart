@@ -5,6 +5,8 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 
+import '../src/js.dart';
+
 final Logger _logger = new Logger('disposable');
 
 abstract class Disposable {
@@ -38,6 +40,27 @@ class Disposables implements Disposable {
     }
 
     _disposables.clear();
+  }
+}
+
+/// A utility class to wrap calling `addEventListener` and `removeEventListener`.
+class EventListener implements Disposable {
+  final JsObject obj;
+  final String eventName;
+
+  dynamic _callback;
+
+  EventListener(this.obj, this.eventName, void fn(JsObject e)) {
+    _callback = new JsFunction.withThis(
+        (_this, e) => fn(new JsObject.fromBrowserObject(e)));
+    obj.callMethod('addEventListener', [eventName, _callback]);
+  }
+
+  void dispose() {
+    if (_callback != null) {
+      obj.callMethod('removeEventListener', [eventName, _callback]);
+    }
+    _callback = null;
   }
 }
 
@@ -75,5 +98,7 @@ class StreamSubscriptions implements Disposable {
 class DisposeableSubscription implements Disposable {
   final StreamSubscription sub;
   DisposeableSubscription(this.sub);
-  void dispose() { sub.cancel(); }
+  void dispose() {
+    sub.cancel();
+  }
 }

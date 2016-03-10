@@ -2,6 +2,7 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:js';
 
 import 'package:logging/logging.dart';
@@ -10,14 +11,43 @@ import '../utils/disposable.dart';
 
 export 'dart:js' show context, JsObject, JsFunction;
 
+final JsObject _browserWindow = new JsObject.fromBrowserObject(context['window']);
+final JsObject _browserJson = _browserWindow['JSON'];
+
 Logger _logger = new Logger("js");
 
-dynamic jsify(obj) {
+JsObject jsify(obj) {
   if (obj == null) return null;
   if (obj is JsObject) return obj;
   if (obj is List || obj is Map) return new JsObject.jsify(obj);
   if (obj is ProxyHolder) return obj.obj;
   return obj;
+}
+
+JsObject uncrackDart2js(dynamic obj) => context.callMethod('uncrackDart2js', [obj]);
+
+/// Convert a JsObject to a List or Map based on `JSON.stringify` and
+/// dart:convert's `JSON.decode`.
+dynamic jsObjectToDart(JsObject obj) {
+  if (obj == null) return null;
+
+  try {
+    String str = _browserJson.callMethod('stringify', [obj]);
+    return JSON.decode(str);
+  } catch (e, st) {
+    _logger.severe('jsObjectToDart', e, st);
+  }
+}
+
+dynamic dartObjectToJS(dynamic obj) {
+  if (obj == null) return null;
+
+  try {
+    String str = JSON.encode(obj);
+    return _browserJson.callMethod('parse', [str]);
+  } catch (e, st) {
+    _logger.severe('dartObjectToJS', e, st);
+  }
 }
 
 Future promiseToFuture(promise) {
