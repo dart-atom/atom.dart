@@ -16,7 +16,7 @@ final JsObject _browserJson = _browserWindow['JSON'];
 
 Logger _logger = new Logger("js");
 
-JsObject jsify(obj) {
+dynamic jsify(obj) {
   if (obj == null) return null;
   if (obj is JsObject) return obj;
   if (obj is List || obj is Map) return new JsObject.jsify(obj);
@@ -24,6 +24,7 @@ JsObject jsify(obj) {
   return obj;
 }
 
+/// This method depends on the embedder defining this method in their JS (uncrackDart2js).
 JsObject uncrackDart2js(dynamic obj) => context.callMethod('uncrackDart2js', [obj]);
 
 /// Convert a JsObject to a List or Map based on `JSON.stringify` and
