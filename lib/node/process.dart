@@ -45,7 +45,7 @@ Future<String> exec(String command, [List<String> args, Map<String, String> env]
   return runner.execSimple().then((ProcessResult result) {
     if (result.exit == 0) return result.stdout;
     throw result.exit;
-  }) as Future<String>;
+  });
 }
 
 /// Execute the given command synchronously and return the stdout. If the
@@ -118,7 +118,7 @@ class ProcessRunner {
 
     return execStreaming().then((code) {
       return new ProcessResult(code, stdout.toString(), stderr.toString());
-    }) as Future<ProcessResult>;
+    });
   }
 
   Future<int> execStreaming() {
