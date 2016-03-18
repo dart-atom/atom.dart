@@ -85,19 +85,19 @@ Future<String> which(String execName, {bool isBatchScript: false}) {
       result = result.trim();
       if (result.contains('\n')) result = result.split('\n').first;
       return result;
-    }) as Future<String>;
+    });
   } else if (isWindows) {
     String ext = isBatchScript ? 'bat' : 'exe';
     return exec('where', ['${execName}.${ext}']).then((String result) {
       result = result.trim();
       if (result.contains('\n')) result = result.split('\n').first;
       return result;
-    }) as Future<String>;
+    });
   } else {
     return exec('which', [execName]).then((String result) {
       result = result.trim();
       if (result.contains('\n')) result = result.split('\n').first;
       return result;
-    }) as Future<String>;
+    });
   }
 }
