@@ -223,7 +223,7 @@ class ProcessNotifier {
         _helper.setSummary('Finished with exit code ${result}.');
       }
       return result;
-    });
+    }) as Future<int>;
   }
 }
 
@@ -255,8 +255,12 @@ Future<String> promptUser(String prompt,
 
   // Focus the element.
   Timer.run(() {
-    try { editorElement.focus(); }
-    catch (e) { _logger.warning(e); }
+    // There's a bug in Dart's JS interop where we can't see custom elements
+    // well. In order to work around it, we get the raw JS object, wrap it in a
+    // JsObject, pass that to a semantic wrapper around TextEditorElement, and
+    // then call `focused()`.
+    JsObject obj = new JsObject.fromBrowserObject(uncrackDart2js(editorElement));
+    new TextEditorElement(obj).focused();
   });
 
   disposables.add(atom.commands.add('atom-workspace', 'core:confirm', (_) {
