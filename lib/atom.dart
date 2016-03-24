@@ -10,11 +10,13 @@ import 'dart:html' show CustomEvent, Element, HttpRequest;
 
 import 'package:logging/logging.dart';
 
-import 'node/node.dart';
 import 'node/notification.dart';
 import 'src/js.dart';
 import 'src/utils.dart';
 import 'utils/disposable.dart';
+
+// TODO(danrubel) remove this once all references have been cleaned up.
+export 'node/process.dart' show BufferedProcess;
 
 final Logger _logger = new Logger('atom');
 
@@ -473,51 +475,6 @@ class TextEditor extends ProxyHolder {
   String selectAll() => invoke('selectAll');
   void selectToBeginningOfWord() => invoke('selectToBeginningOfWord');
   void save() => invoke('save');
-}
-
-class BufferedProcess extends ProxyHolder {
-  static BufferedProcess create(String command, {
-      List<String> args,
-      void stdout(String str),
-      void stderr(String str),
-      void exit(num code),
-      String cwd,
-      Map<String, String> env,
-      Function onWillThrowError}) {
-    Map<String, dynamic> options = {'command': command};
-
-    if (args != null) options['args'] = args;
-    if (stdout != null) options['stdout'] = stdout;
-    if (stderr != null) options['stderr'] = stderr;
-    if (exit != null) options['exit'] = exit;
-    if (onWillThrowError != null) options['onWillThrowError'] = (JsObject e) {
-      e.callMethod('handle');
-      onWillThrowError(e['error']);
-    };
-
-    if (cwd != null || env != null) {
-      Map<String, dynamic> nodeOptions = {};
-      if (cwd != null) nodeOptions['cwd'] = cwd;
-      if (env != null) nodeOptions['env'] = jsify(env);
-      options['options'] = nodeOptions;
-    }
-
-    JsFunction ctor = require('atom')['BufferedProcess'];
-    return new BufferedProcess._(new JsObject(ctor, [new JsObject.jsify(options)]));
-  }
-
-  JsObject _stdin;
-
-  BufferedProcess._(JsObject object) : super(object);
-
-  /// Write the given string as utf8 bytes to the process' stdin.
-  void write(String str) {
-    // node.js ChildProcess, Writeable stream
-    if (_stdin == null) _stdin = obj['process']['stdin'];
-    _stdin.callMethod('write', [str, 'utf8']);
-  }
-
-  void kill() => invoke('kill');
 }
 
 class AtomEvent extends ProxyHolder {

@@ -8,7 +8,6 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 
-import '../atom.dart';
 import '../src/js.dart';
 import 'node.dart';
 
@@ -238,4 +237,49 @@ class MacShellWrangler {
   Map<String, String> get env => _env;
 
   String toString() => '$_currentShell $_targetShell $_env';
+}
+
+class BufferedProcess extends ProxyHolder {
+  static BufferedProcess create(String command, {
+      List<String> args,
+      void stdout(String str),
+      void stderr(String str),
+      void exit(num code),
+      String cwd,
+      Map<String, String> env,
+      Function onWillThrowError}) {
+    Map<String, dynamic> options = {'command': command};
+
+    if (args != null) options['args'] = args;
+    if (stdout != null) options['stdout'] = stdout;
+    if (stderr != null) options['stderr'] = stderr;
+    if (exit != null) options['exit'] = exit;
+    if (onWillThrowError != null) options['onWillThrowError'] = (JsObject e) {
+      e.callMethod('handle');
+      onWillThrowError(e['error']);
+    };
+
+    if (cwd != null || env != null) {
+      Map<String, dynamic> nodeOptions = {};
+      if (cwd != null) nodeOptions['cwd'] = cwd;
+      if (env != null) nodeOptions['env'] = jsify(env);
+      options['options'] = nodeOptions;
+    }
+
+    JsFunction ctor = require('atom')['BufferedProcess'];
+    return new BufferedProcess._(new JsObject(ctor, [new JsObject.jsify(options)]));
+  }
+
+  JsObject _stdin;
+
+  BufferedProcess._(JsObject object) : super(object);
+
+  /// Write the given string as utf8 bytes to the process' stdin.
+  void write(String str) {
+    // node.js ChildProcess, Writeable stream
+    if (_stdin == null) _stdin = obj['process']['stdin'];
+    _stdin.callMethod('write', [str, 'utf8']);
+  }
+
+  void kill() => invoke('kill');
 }
