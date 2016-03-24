@@ -115,11 +115,11 @@ abstract class AtomPackage {
   Future<Map<String, dynamic>> loadPackageJson() {
     return HttpRequest.getString('atom://${id}/package.json').then((String str) {
       return JSON.decode(str) as Map<String, dynamic>;
-    });
+    }) as Future<Map<String, dynamic>>;
   }
 
   Future<String> getPackageVersion() {
-    return loadPackageJson().then((Map map) => map['version']);
+    return loadPackageJson().then((Map map) => map['version']) as Future<String>;
   }
 
   // /// Register a method for a service callback (`consumedServices`).
@@ -448,8 +448,25 @@ class Panel extends ProxyHolder {
   void destroy() => invoke('destroy');
 }
 
+/// This cooresponds to an `atom-text-editor` custom element.
+class TextEditorElement extends ProxyHolder {
+  TextEditorElement(JsObject object) : super(_cvt(object));
+
+  TextEditor getModel() => new TextEditor(invoke('getModel'));
+
+  bool get focusOnAttach => obj['focusOnAttach'];
+
+  set focusOnAttach(bool value) {
+    obj['focusOnAttach'] = value;
+  }
+
+  void focused() => invoke('focused');
+}
+
 class TextEditor extends ProxyHolder {
   TextEditor(JsObject object) : super(_cvt(object));
+
+  TextEditorElement getElement() => new TextEditorElement(invoke('getElement'));
 
   /// Return whether this editor is a valid object. We sometimes create them
   /// from JS objects w/o knowning if they are editors for certain.
