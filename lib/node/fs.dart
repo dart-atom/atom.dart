@@ -64,6 +64,10 @@ class FS extends ProxyHolder {
   Stats statSync(String path) => new Stats._(invoke('statSync', path));
 
   bool existsSync(String path) => invoke('existsSync', path);
+
+  String readFileSync(String path) => invoke('readFileSync', path, {'encoding': 'utf8'});
+
+  void writeFileSync(String path, String data) => invoke('writeFileSync', path, data);
 }
 
 class Stats extends ProxyHolder {
