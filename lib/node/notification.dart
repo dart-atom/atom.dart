@@ -229,7 +229,7 @@ class ProcessNotifier {
 
 /// Display a textual prompt to the user.
 Future<String> promptUser(String prompt,
-    {String defaultText, bool selectText: false, bool selectLastWord: false}) {
+    {String defaultText, bool selectText: false, bool selectLastWord: false, bool isDart: false}) {
   if (defaultText == null) defaultText = '';
 
   // div, atom-text-editor.editor.mini div.message atom-text-editor[mini]
@@ -251,6 +251,10 @@ Future<String> promptUser(String prompt,
   } else if (selectLastWord) {
     editor.moveToEndOfLine();
     editor.selectToBeginningOfWord();
+  }
+
+  if (isDart) {
+    editor.setGrammar(atom.grammars.grammarForScopeName('source.dart'));
   }
 
   // Focus the element.

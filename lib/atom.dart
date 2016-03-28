@@ -144,7 +144,7 @@ class Atom extends ProxyHolder {
   CommandRegistry _commands;
   Config _config;
   // ContextMenuManager _contextMenu;
-  // GrammarRegistry _grammars;
+  GrammarRegistry _grammars;
   NotificationManager _notifications;
   PackageManager _packages;
   Project _project;
@@ -155,7 +155,7 @@ class Atom extends ProxyHolder {
     _commands = new CommandRegistry(obj['commands']);
     _config = new Config(obj['config']);
     // _contextMenu = new ContextMenuManager(obj['contextMenu']);
-    // _grammars = new GrammarRegistry(obj['grammars']);
+    _grammars = new GrammarRegistry(obj['grammars']);
     _notifications = new NotificationManager(obj['notifications']);
     _packages = new PackageManager(obj['packages']);
     _project = new Project(obj['project']);
@@ -166,7 +166,7 @@ class Atom extends ProxyHolder {
   CommandRegistry get commands => _commands;
   Config get config => _config;
   // ContextMenuManager get contextMenu => _contextMenu;
-  // GrammarRegistry get grammars => _grammars;
+  GrammarRegistry get grammars => _grammars;
   NotificationManager get notifications => _notifications;
   PackageManager get packages => _packages;
   Project get project => _project;
@@ -440,7 +440,7 @@ class Panel extends ProxyHolder {
 
   Stream<bool> get onDidChangeVisible => eventStream('onDidChangeVisible') as Stream<bool>;
   Stream<Panel> get onDidDestroy =>
-      eventStream('onDidDestroy').map((obj) => new Panel(obj));
+      eventStream('onDidDestroy').map((obj) => new Panel(obj)) as Stream<Panel>;
 
   bool isVisible() => invoke('isVisible');
   void show() => invoke('show');
@@ -492,6 +492,37 @@ class TextEditor extends ProxyHolder {
   String selectAll() => invoke('selectAll');
   void selectToBeginningOfWord() => invoke('selectToBeginningOfWord');
   void save() => invoke('save');
+
+  /// Get the current Grammar of this editor.
+  Grammar getGrammar() => new Grammar(invoke('getGrammar'));
+
+  /// Set the current Grammar of this editor.
+  ///
+  /// Assigning a grammar will cause the editor to re-tokenize based on the new
+  /// grammar.
+  void setGrammar(Grammar grammar) {
+    invoke('setGrammar', grammar);
+  }
+
+  int get hashCode => obj.hashCode;
+  bool operator ==(other) => other is TextEditor && obj == other.obj;
+}
+
+/// Grammar that tokenizes lines of text.
+class Grammar extends ProxyHolder {
+  factory Grammar(JsObject object) => object == null ? null : new Grammar._(object);
+  Grammar._(JsObject object) : super(_cvt(object));
+}
+
+/// Registry containing one or more grammars.
+class GrammarRegistry extends ProxyHolder {
+  GrammarRegistry(JsObject object) : super(_cvt(object));
+
+  /// Get a grammar with the given scope name. [scopeName] should be a string
+  /// such as "source.js".
+  Grammar grammarForScopeName(String scopeName) {
+    return new Grammar(invoke('grammarForScopeName', scopeName));
+  }
 }
 
 class AtomEvent extends ProxyHolder {
