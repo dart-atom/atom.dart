@@ -10,9 +10,6 @@ import 'dart:html' show CustomEvent, DivElement, Element, HttpRequest, Node, Nod
 import 'package:atom/node/process.dart';
 import 'package:logging/logging.dart';
 
-// TODO(danrubel) remove this once references have been updated
-export 'node/notification.dart' show promptUser;
-
 final Logger _logger = new Logger('atom_utils');
 
 class TrustedHtmlTreeSanitizer implements NodeTreeSanitizer {

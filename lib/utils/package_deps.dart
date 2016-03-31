@@ -6,6 +6,7 @@ library atom.utils.package_deps;
 import 'dart:async';
 
 import '../atom.dart';
+import '../node/package.dart';
 import '../node/process.dart';
 
 Future install(String packageLabel, AtomPackage package, {bool justNotify: false}) {

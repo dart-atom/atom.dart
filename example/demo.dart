@@ -1,6 +1,6 @@
 // Build with: `dev_compiler -oexample/ddc example/demo.dart`.
 
-import 'package:atom/atom.dart';
+import 'package:atom/node/package.dart';
 
 void main() {
   registerPackage(new DemoPackage());
