@@ -100,12 +100,11 @@ abstract class AtomPackage {
     String url = 'atom://${id}/package.json';
     return HttpRequest.getString(url).then((String str) {
       return JSON.decode(str) as Map<String, dynamic>;
-    }) as Future<Map<String, dynamic>>;
+    });
   }
 
   Future<String> getPackageVersion() {
-    return loadPackageJson().then((Map map) => map['version'])
-        as Future<String>;
+    return loadPackageJson().then((Map map) => map['version']);
   }
 
   /// Register a method for a service callback (`consumedServices`).

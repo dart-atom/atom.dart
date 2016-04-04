@@ -223,7 +223,7 @@ class ProcessNotifier {
         _helper.setSummary('Finished with exit code ${result}.');
       }
       return result;
-    }) as Future<int>;
+    });
   }
 }
 

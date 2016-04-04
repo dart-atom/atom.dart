@@ -14,9 +14,6 @@ import 'src/js.dart';
 import 'src/utils.dart';
 import 'utils/disposable.dart';
 
-//TODO(danrubel) remove once references have been cleaned up
-export 'node/package.dart';
-
 final Logger _logger = new Logger('atom');
 
 /// The singleton instance of [Atom].
