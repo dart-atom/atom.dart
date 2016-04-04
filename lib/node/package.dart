@@ -125,3 +125,34 @@ abstract class AtomPackage {
     return null;
   }
 }
+
+/// Package manager for coordinating the lifecycle of Atom packages. Packages
+/// can be loaded, activated, and deactivated, and unloaded.
+class PackageManager extends ProxyHolder {
+  PackageManager(JsObject object) : super(object);
+
+  /// Get the path to the apm command.
+  ///
+  /// Return a String file path to apm.
+  String getApmPath() => invoke('getApmPath');
+
+  /// Get the paths being used to look for packages.
+  List<String> getPackageDirPaths() => new List.from(invoke('getPackageDirPaths'));
+
+  /// Is the package with the given name bundled with Atom?
+  bool isBundledPackage(name) => invoke('isBundledPackage', name);
+
+  bool isPackageLoaded(String name) => invoke('isPackageLoaded', name);
+
+  bool isPackageDisabled(String name) => invoke('isPackageDisabled', name);
+
+  bool isPackageActive(String name) => invoke('isPackageActive', name);
+
+  List<String> getAvailablePackageNames() =>
+      new List.from(invoke('getAvailablePackageNames'));
+
+  /// Activate a single package by name.
+  Future activatePackage(String name) {
+    return promiseToFuture(invoke('activatePackage', name));
+  }
+}

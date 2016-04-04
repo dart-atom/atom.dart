@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:html';
 
-import 'package:atom/atom_utils.dart';
-import 'package:atom/utils/disposable.dart';
+import '../atom_utils.dart';
+import '../utils/disposable.dart';
 import 'package:logging/logging.dart';
 
 import '../atom.dart';
 import '../src/js.dart';
 import 'process.dart';
+import 'workspace.dart';
 
 final Logger _logger = new Logger('notification');
 
