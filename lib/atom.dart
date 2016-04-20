@@ -15,7 +15,10 @@ import 'node/package.dart';
 import 'node/workspace.dart';
 import 'src/js.dart';
 
-export 'package:atom/src/js.dart' show Promise, ProxyHolder;
+export 'src/js.dart' show Promise, ProxyHolder;
+
+// TODO remove this once all references have been updated.
+export 'node/command.dart';
 
 final Logger _logger = new Logger('atom');
 
