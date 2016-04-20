@@ -15,6 +15,8 @@ import 'node/package.dart';
 import 'node/workspace.dart';
 import 'src/js.dart';
 
+export 'package:atom/src/js.dart' show Promise, ProxyHolder;
+
 final Logger _logger = new Logger('atom');
 
 /// The singleton instance of [Atom].
@@ -23,7 +25,7 @@ final Atom atom = new Atom();
 class Atom extends ProxyHolder {
   CommandRegistry _commands;
   Config _config;
-  // ContextMenuManager _contextMenu;
+  ContextMenuManager _contextMenu;
   GrammarRegistry _grammars;
   NotificationManager _notifications;
   PackageManager _packages;
@@ -34,7 +36,7 @@ class Atom extends ProxyHolder {
   Atom() : super(context['atom']) {
     _commands = new CommandRegistry(obj['commands']);
     _config = new Config(obj['config']);
-    // _contextMenu = new ContextMenuManager(obj['contextMenu']);
+    _contextMenu = new ContextMenuManager(obj['contextMenu']);
     _grammars = new GrammarRegistry(obj['grammars']);
     _notifications = new NotificationManager(obj['notifications']);
     _packages = new PackageManager(obj['packages']);
@@ -45,7 +47,7 @@ class Atom extends ProxyHolder {
 
   CommandRegistry get commands => _commands;
   Config get config => _config;
-  // ContextMenuManager get contextMenu => _contextMenu;
+  ContextMenuManager get contextMenu => _contextMenu;
   GrammarRegistry get grammars => _grammars;
   NotificationManager get notifications => _notifications;
   PackageManager get packages => _packages;
