@@ -80,11 +80,12 @@ class AtomEvent extends ProxyHolder {
   // With dart2js, this gets passed in as a JsObject (most times?). With DDC,
   // it's passed in as a CustomEvent.
   factory AtomEvent(dynamic object) {
-    if (object is JsObject) {
+    // TODO ... fix or remove custom event ...
+    // if (object is JsObject) {
       return new AtomEvent._fromJsObject(object);
-    } else {
-      return new _AtomEventCustomEvent(object);
-    }
+    // } else {
+    //   return new _AtomEventCustomEvent(object);
+    // }
   }
 
   AtomEvent._fromJsObject(JsObject object) : super(_cvt(object));
@@ -156,47 +157,47 @@ class AtomEvent extends ProxyHolder {
 }
 
 /// An AtomEvent that wraps a CustomEvent.
-class _AtomEventCustomEvent implements AtomEvent {
-  final CustomEvent event;
-
-  _AtomEventCustomEvent(this.event);
-
-  TextEditor get editor {
-    throw 'unimplemented';
-  }
-
-  String get targetFilePath {
-    throw 'unimplemented';
-  }
-
-  void abortKeyBinding() => (event as dynamic).abortKeyBinding();
-
-  dynamic get currentTarget => event.currentTarget;
-
-  bool get defaultPrevented => event.defaultPrevented;
-
-  Stream eventStream(String eventName) {
-    throw 'unimplemented';
-  }
-
-  invoke(String method, [arg1, arg2, arg3]) {
-    throw 'unimplemented';
-  }
-
-  bool get keyBindingAborted => (event as dynamic).keyBindingAborted;
-
-  JsObject get obj {
-    throw 'unimplemented';
-  }
-
-  void preventDefault() => event.preventDefault();
-
-  bool get propagationStopped => (event as dynamic).propagationStopped;
-
-  void stopImmediatePropagation() => event.stopImmediatePropagation();
-
-  void stopPropagation() => event.stopPropagation();
-}
+// class _AtomEventCustomEvent implements AtomEvent {
+//   final CustomEvent event;
+//
+//   _AtomEventCustomEvent(this.event);
+//
+//   TextEditor get editor {
+//     throw 'unimplemented';
+//   }
+//
+//   String get targetFilePath {
+//     throw 'unimplemented';
+//   }
+//
+//   void abortKeyBinding() => (event as dynamic).abortKeyBinding();
+//
+//   dynamic get currentTarget => event.currentTarget;
+//
+//   bool get defaultPrevented => event.defaultPrevented;
+//
+//   Stream eventStream(String eventName) {
+//     throw 'unimplemented';
+//   }
+//
+//   invoke(String method, [arg1, arg2, arg3]) {
+//     throw 'unimplemented';
+//   }
+//
+//   bool get keyBindingAborted => (event as dynamic).keyBindingAborted;
+//
+//   JsObject get obj {
+//     throw 'unimplemented';
+//   }
+//
+//   void preventDefault() => event.preventDefault();
+//
+//   bool get propagationStopped => (event as dynamic).propagationStopped;
+//
+//   void stopImmediatePropagation() => event.stopImmediatePropagation();
+//
+//   void stopPropagation() => event.stopPropagation();
+// }
 
 JsObject _cvt(JsObject object) {
   if (object == null) return null;
