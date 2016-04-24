@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show JSON;
-import 'dart:html' show CustomEvent, Element, HttpRequest;
+import 'dart:html' show HttpRequest;
 
 import '../src/js.dart';
 import '../utils/disposable.dart';

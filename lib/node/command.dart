@@ -2,7 +2,7 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:html' show CustomEvent, Element, HttpRequest;
+import 'dart:html' show Element;
 
 import 'package:logging/logging.dart';
 

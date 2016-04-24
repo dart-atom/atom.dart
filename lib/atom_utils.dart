@@ -5,7 +5,7 @@
 library atom_utils;
 
 import 'dart:async';
-import 'dart:html' show CustomEvent, DivElement, Element, HttpRequest, Node, NodeTreeSanitizer;
+import 'dart:html' show Node, NodeTreeSanitizer;
 
 import 'package:atom/node/process.dart';
 import 'package:logging/logging.dart';

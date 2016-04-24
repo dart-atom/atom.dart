@@ -220,7 +220,12 @@ class MacShellWrangler {
       for (String line in result.split('\n')) {
         int index = line.indexOf('=');
         if (index != -1) {
-          _env[line.substring(0, index)] = line.substring(index + 1);
+          String key = line.substring(0, index);
+          String value = line.substring(index + 1);
+
+          // Strip the `TERM` environment variable - when launching processes we
+          // do not support ansi codes.
+          if (key != 'TERM') _env[key] = value;
         }
       }
     }
