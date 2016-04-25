@@ -46,7 +46,9 @@ Future _installPackage(String name) {
 
   return runner.execSimple().then((ProcessResult result) {
     if (result.exit == 0) {
-      atom.packages.activatePackage(name);
+      // Return the future from activatePackage
+      // so that install does not complete until activation is complete.
+      return atom.packages.activatePackage(name);
     } else {
       if (result.stderr != null && result.stderr.isNotEmpty) {
         throw result.stderr.trim();
