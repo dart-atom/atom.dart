@@ -16,7 +16,7 @@ final Process process = new Process._();
 final bool isWindows = process.platform.startsWith('win');
 final bool isMac = process.platform == 'darwin';
 final bool isLinux = !isWindows && !isMac;
-bool get isPosix => !isWindows;
+final bool isPosix = !isWindows;
 
 final Logger _logger = new Logger('process');
 
