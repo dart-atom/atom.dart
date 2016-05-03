@@ -86,10 +86,8 @@ class ProcessRunner {
   factory ProcessRunner.underShell(String command, {
     List<String> args, String cwd, Map<String, String> env
   }) {
-    if (isPosix && _shellWrangler == null) {
-      if (_shellWrangler == null) {
-        _shellWrangler = new ShellWrangler();
-      }
+    if (isPosix) {
+      _shellWrangler ??= new ShellWrangler();
 
       if (_shellWrangler.isNecessary) {
         return new ProcessRunner(command, args: args, cwd: cwd, env: _shellWrangler.env);
