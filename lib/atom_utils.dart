@@ -17,7 +17,7 @@ class TrustedHtmlTreeSanitizer implements NodeTreeSanitizer {
   void sanitizeTree(Node node) { }
 }
 
-MacShellWrangler _shellWrangler;
+ShellWrangler _shellWrangler;
 
 /// Look for the given executable; throw an error if we can't find it.
 ///
@@ -25,7 +25,7 @@ MacShellWrangler _shellWrangler;
 /// `isBatchScript` is specified.
 Future<String> which(String execName, {bool isBatchScript: false}) {
   if (isMac) {
-    if (_shellWrangler == null) _shellWrangler = new MacShellWrangler();
+    if (_shellWrangler == null) _shellWrangler = new ShellWrangler();
 
     return exec('which', [execName], _shellWrangler.env).then((String result) {
       result = result.trim();
@@ -40,7 +40,9 @@ Future<String> which(String execName, {bool isBatchScript: false}) {
       return result;
     });
   } else {
-    return exec('which', [execName]).then((String result) {
+    if (_shellWrangler == null) _shellWrangler = new ShellWrangler();
+
+    return exec('which', [execName], _shellWrangler.env).then((String result) {
       result = result.trim();
       if (result.contains('\n')) result = result.split('\n').first;
       return result;

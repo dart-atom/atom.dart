@@ -16,6 +16,7 @@ final Process process = new Process._();
 final bool isWindows = process.platform.startsWith('win');
 final bool isMac = process.platform == 'darwin';
 final bool isLinux = !isWindows && !isMac;
+bool get isPosix => !isWindows;
 
 final Logger _logger = new Logger('process');
 
@@ -62,7 +63,7 @@ String execSync(String command) {
 }
 
 class ProcessRunner {
-  static MacShellWrangler _shellWrangler;
+  static ShellWrangler _shellWrangler;
 
   final String command;
   final List<String> args;
@@ -85,12 +86,14 @@ class ProcessRunner {
   factory ProcessRunner.underShell(String command, {
     List<String> args, String cwd, Map<String, String> env
   }) {
-    if (isMac && _shellWrangler == null) {
-      _shellWrangler = new MacShellWrangler();
-    }
+    if (isPosix && _shellWrangler == null) {
+      if (_shellWrangler == null) {
+        _shellWrangler = new ShellWrangler();
+      }
 
-    if (isMac && _shellWrangler.isNecessary) {
-      return new ProcessRunner(command, args: args, cwd: cwd, env: _shellWrangler.env);
+      if (_shellWrangler.isNecessary) {
+        return new ProcessRunner(command, args: args, cwd: cwd, env: _shellWrangler.env);
+      }
     }
 
     return new ProcessRunner(command, args: args, cwd: cwd, env: env);
@@ -197,17 +200,18 @@ String queryEnv(String variable) {
 /// - detect the current shell and the user's preferred shell
 /// - gather all the env variables from the preferred shell
 /// - when exec'ing a process, pass in the env variables discovered from the user's shell
-class MacShellWrangler {
+class ShellWrangler {
   String _currentShell;
   String _targetShell;
   Map<String, String> _env;
 
-  MacShellWrangler() {
+  ShellWrangler() {
     _currentShell = queryEnv('0');
     _targetShell = queryEnv('SHELL');
 
     if (isNecessary) {
       String result;
+
       if (_targetShell.endsWith('/csh') || _targetShell.endsWith('/tcsh')) {
         // csh and tcsh don't support -l
         result = execSync("$_targetShell -c 'printenv'");
@@ -231,7 +235,13 @@ class MacShellWrangler {
     }
   }
 
-  bool get isNecessary => _currentShell == '/bin/sh';
+  bool get isNecessary {
+    if (isMac) {
+      return _currentShell == '/bin/sh';
+    } else {
+      return _currentShell != _targetShell;
+    }
+  }
 
   String get targetShell => _targetShell;
 
