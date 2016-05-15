@@ -2,14 +2,14 @@
 import 'dart:async';
 import 'dart:js';
 
+import 'package:logging/logging.dart';
+
+import '../src/js.dart';
+import '../src/utils.dart';
+import '../utils/disposable.dart';
 import 'config.dart';
 import 'fs.dart';
 import 'node.dart';
-import '../src/js.dart';
-import '../utils/disposable.dart';
-import 'package:logging/logging.dart';
-
-import '../src/utils.dart';
 
 final Logger _logger = new Logger('workspace');
 

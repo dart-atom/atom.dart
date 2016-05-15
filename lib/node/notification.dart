@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html';
 
-import '../atom_utils.dart';
-import '../utils/disposable.dart';
 import 'package:logging/logging.dart';
 
 import '../atom.dart';
+import '../atom_utils.dart';
 import '../src/js.dart';
+import '../utils/disposable.dart';
 import 'process.dart';
 import 'workspace.dart';
 
@@ -153,10 +154,10 @@ class NotificationHelper {
   void appendText(String text, {bool stderr: false}) {
     _classList.callMethod('toggle', ['has-detail', true]);
 
-    List<Element> elements = new List.from(text.split('\n').map((line) {
-      DivElement div = new DivElement()..text = line;
-      div.classes.toggle('line');
-      if (stderr) div.classes.toggle('text-error');
+    List<Element> elements = new List.from(LineSplitter.split(text).map((String line) {
+      DivElement div = new DivElement()..text = line.trimRight();
+      div.classes.toggle('line', true);
+      if (stderr) div.classes.toggle('text-error', true);
       return div;
     }));
 
