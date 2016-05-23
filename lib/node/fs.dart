@@ -57,6 +57,22 @@ class FS extends ProxyHolder {
     return path;
   }
 
+  /// If the given path starts with ~/ then return an equivlent path
+  /// with the ~ replace by the user's home directory,
+  /// otherwise return the given path unchanged.
+  String resolveTilde(String path) {
+    if (path == null) return null;
+    if (!path.startsWith('~/')) return path;
+    String home;
+    try {
+      home = fs.homedir;
+    } catch (_) {
+      return path;
+    }
+    if (!home.endsWith('/')) home += '/';
+    return home + path.substring(2);
+  }
+
   /// Relative path entries are removed and symlinks are resolved to their final
   /// destination.
   String realpathSync(String path) => invoke('realpathSync', path);
