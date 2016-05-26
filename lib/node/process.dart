@@ -148,11 +148,11 @@ class ProcessRunner {
     return _exitCompleter.future;
   }
 
-  void write(String str) => _process.write(str);
+  bool write(String str) => _process.write(str);
 
   Future<int> kill() {
     if (_process != null) _process.kill();
-    new Future.delayed(new Duration(milliseconds: 50), () {
+    new Future.delayed(new Duration(milliseconds: 100), () {
       if (!_exitCompleter.isCompleted) _exitCompleter.complete(0);
     });
     return _exitCompleter.future;
@@ -288,10 +288,12 @@ class BufferedProcess extends ProxyHolder {
   BufferedProcess._(JsObject object) : super(object);
 
   /// Write the given string as utf8 bytes to the process' stdin.
-  void write(String str) {
+  ///
+  /// Returns true if the data was handled completely.
+  bool write(String str) {
     // node.js ChildProcess, Writeable stream
     if (_stdin == null) _stdin = obj['process']['stdin'];
-    _stdin.callMethod('write', [str, 'utf8']);
+    return _stdin.callMethod('write', [str, 'utf8']);
   }
 
   void kill() => invoke('kill');
