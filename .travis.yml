@@ -2,7 +2,8 @@ language: dart
 dart: dev
 sudo: false
 
-script: ./tool/travis.sh
+script:
+  - pub run grinder bot
 
 branches:
   only:
