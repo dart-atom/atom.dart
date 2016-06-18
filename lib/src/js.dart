@@ -33,10 +33,10 @@ dynamic jsObjectToDart(JsObject obj) {
   if (obj == null) return null;
 
   try {
-    String str = _browserJson.callMethod('stringify', [obj]);
-    return JSON.decode(str);
+    return JSON.decode(_browserJson.callMethod('stringify', [obj]));
   } catch (e, st) {
     _logger.severe('jsObjectToDart', e, st);
+    return null;
   }
 }
 
@@ -44,10 +44,10 @@ dynamic dartObjectToJS(dynamic obj) {
   if (obj == null) return null;
 
   try {
-    String str = JSON.encode(obj);
-    return _browserJson.callMethod('parse', [str]);
+    return _browserJson.callMethod('parse', [JSON.encode(obj)]);
   } catch (e, st) {
     _logger.severe('dartObjectToJS', e, st);
+    return null;
   }
 }
 
