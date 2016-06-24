@@ -588,6 +588,8 @@ class TextEditor extends ProxyHolder {
   /// handle changes to the buffer without compromising typing performance.
   Stream get onDidStopChanging => eventStream('onDidStopChanging');
 
+  Stream get onDidChangeTitle => eventStream('onDidChangeTitle');
+
   /// Invoke the given callback when the editor is destroyed.
   Stream get onDidDestroy => eventStream('onDidDestroy');
 
