@@ -13,6 +13,9 @@ build() async {
   return buildDart2JS();
 }
 
+@Task()
+test() => new TestRunner().testAsync();
+
 buildDart2JS() async {
   File inputFile = getFile('example/demo.dart');
   File outputFile = getFile('example/demo.dart.js');
@@ -22,7 +25,7 @@ buildDart2JS() async {
 }
 
 @DefaultTask()
-@Depends(analyze, build)
+@Depends(analyze, test, build)
 bot() => null;
 
 @Task('Analyze with DDC')
