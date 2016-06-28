@@ -5,10 +5,6 @@ main() => defineTests();
 
 defineTests() {
   group('string_utils diff', () {
-    test('diff same', () {
-      expect(simpleDiff('a', 'a').first, new Edit(0, 0, ''));
-    });
-
     test('same', () {
       expect(simpleDiff('a', 'a').first, new Edit(0, 0, ''));
     });
