@@ -41,7 +41,6 @@ void registerPackage(AtomPackage package) {
   exports['serialize'] = _package.serialize;
 
   package._registeredMethods.forEach((methodName, f) {
-    print('Register:' + methodName);
     exports[methodName] = (arg) {
       var result = f(arg);
       if (result is Disposable) {
