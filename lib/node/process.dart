@@ -52,8 +52,9 @@ Future<String> exec(String command, [List<String> args, Map<String, String> env]
 /// process has a non-zero exit code, this method will throw.
 String execSync(String command) {
   try {
-    String result = require('child_process').callMethod('execSync', [command]);
+    var result = require('child_process').callMethod('execSync', [command]);
     if (result == null) return null;
+    if (result is List) result = new String.fromCharCodes(result);
     result = '$result'.trim();
     return result.isEmpty ? null : result;
   } catch (error) {
@@ -133,8 +134,8 @@ class ProcessRunner {
           stderr: (s) => _stderrController.add(s),
           exit: (code) {
             _logger.fine('exit code: ${code} (${command})');
-            _exit = code;
-            if (!_exitCompleter.isCompleted) _exitCompleter.complete(code);
+            _exit = code.toInt();
+            if (!_exitCompleter.isCompleted) _exitCompleter.complete(_exit);
           },
           onWillThrowError: (e) {
             if (!_exitCompleter.isCompleted) _exitCompleter.completeError(e);

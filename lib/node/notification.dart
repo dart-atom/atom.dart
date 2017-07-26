@@ -112,16 +112,17 @@ class NotificationButton {
 
 /// A helper class to manipulate the UI of [Notification]s.
 class NotificationHelper {
-  JsObject _view;
+  HtmlElement _view;
   var _classList;
   Element _content;
   Element _titleElement;
   Element _detailContent;
   Element _description;
 
-  NotificationHelper(this._view) {
-    _classList = _view['classList'];
-    _content = _view.callMethod('querySelector', ['div.content']);
+  NotificationHelper(JsObject jsView) {
+    _view = jsView['element'];
+    _classList = _view.classes;
+    _content = _view.querySelector('div.content');
     _titleElement = _content.querySelector('div.message p');
     _detailContent = _content.querySelector('div.detail-content');
     _description = _content.querySelector('div.meta div.description');
@@ -136,8 +137,8 @@ class NotificationHelper {
     try {
       // TODO: We can't actually get an html element for the `atom-notification`
       // custom element, because Dart and custom elements.
-      _classList.callMethod('remove', ['icon-info']);
-      _classList.callMethod('add', ['icon-running']);
+      _classList.remove('icon-info');
+      _classList.add('icon-running');
     } catch (e) {
       print(e);
     }
@@ -152,7 +153,7 @@ class NotificationHelper {
   }
 
   void appendText(String text, {bool stderr: false}) {
-    _classList.callMethod('toggle', ['has-detail', true]);
+    _classList.toggle('has-detail', true);
 
     List<Element> elements = new List.from(LineSplitter.split(text).map((String line) {
       DivElement div = new DivElement()..text = line.trimRight();
@@ -171,8 +172,8 @@ class NotificationHelper {
 
   void showSuccess() {
     try {
-      _classList.callMethod('remove', ['info', 'icon-info', 'icon-running']);
-      _classList.callMethod('add', ['success', 'icon-check']);
+      _classList.removeAll(['info', 'icon-info', 'icon-running']);
+      _classList.addAll(['success', 'icon-check']);
     } catch (e) {
       print(e);
     }
@@ -180,8 +181,8 @@ class NotificationHelper {
 
   void showError() {
     try {
-      _classList.callMethod('remove', ['info', 'icon-info', 'icon-running']);
-      _classList.callMethod('add', ['error', 'icon-flame']);
+      _classList.removeAll(['info', 'icon-info', 'icon-running']);
+      _classList.addAll(['error', 'icon-flame']);
     } catch (e) {
       print(e);
     }

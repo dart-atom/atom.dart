@@ -2,6 +2,7 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:html';
 
 import 'package:logging/logging.dart';
 
@@ -43,22 +44,22 @@ class Disposables implements Disposable {
   }
 }
 
-/// A utility class to wrap calling `addEventListener` and `removeEventListener`.
+/// A utility class to wrap calling `addEventListener` and
+/// `removeEventListener`.
 class EventListener implements Disposable {
-  final JsObject obj;
+  final HtmlElement obj;
   final String eventName;
 
   dynamic _callback;
 
   EventListener(this.obj, this.eventName, void fn(JsObject e)) {
-    _callback = new JsFunction.withThis(
-        (_this, e) => fn(new JsObject.fromBrowserObject(e)));
-    obj.callMethod('addEventListener', [eventName, _callback]);
+    _callback = fn;
+    obj.addEventListener(eventName, _callback);
   }
 
   void dispose() {
     if (_callback != null) {
-      obj.callMethod('removeEventListener', [eventName, _callback]);
+      obj.removeEventListener(eventName, _callback);
     }
     _callback = null;
   }
