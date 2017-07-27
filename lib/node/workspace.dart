@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:html' as html;
 import 'dart:js';
 
 import 'package:logging/logging.dart';
@@ -371,16 +372,26 @@ class TextEditorElement extends ProxyHolder {
 
   TextEditor getModel() => new TextEditor(invoke('getModel'));
 
-  // num scrollTop() => invoke('scrollTop');
-  // num scrollLeft() => invoke('scrollLeft');
-
-  bool get focusOnAttach => obj['focusOnAttach'];
-
-  set focusOnAttach(bool value) {
-    obj['focusOnAttach'] = value;
-  }
+  TextEditorComponent getComponent() =>
+      new TextEditorComponent(obj['component']);
 
   void focused() => invoke('focused');
+}
+
+class TextEditorComponent extends ProxyHolder {
+  TextEditorComponent(JsObject object) : super(_cvt(object));
+
+  Point screenPositionForMouseEvent(html.MouseEvent e) =>
+      new Point(invoke('screenPositionForMouseEvent', e));
+
+  html.Point pixelPositionForScreenPosition(Point screen) {
+    JsObject pt = invoke('pixelPositionForScreenPosition', screen.obj);
+    return new html.Point<num>(pt['left'], pt['top']);
+  }
+
+  num get scrollTop => invoke('getScrollTop');
+  num get scrollLeft => invoke('getScrollLeft');
+  num get gutterWidth => invoke('getGutterWidth');
 }
 
 class TextEditor extends ProxyHolder {
