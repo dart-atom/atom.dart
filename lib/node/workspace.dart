@@ -25,11 +25,189 @@ class ViewRegistry extends ProxyHolder {
     _instance = this;
   }
 
-  // TODO: expose addViewProvider(providerSpec)
+  // TODO: add modelConstructor
+  Disposable addViewProvider(createView) =>
+      invoke('addViewProvider', createView);
 
   /// Get the view associated with an object in the workspace. The result is
   /// likely an html Element.
   dynamic getView(object) => invoke('getView', object);
+}
+
+// A Change Listener for events going into Atom instead of out.
+class JsChangeListener {
+  List<JsFunction> _callbacks = [];
+
+  void add(JsFunction callback) {
+    _callbacks.add(callback);
+    return jsify ({
+      'dispose': () => _callbacks.remove(callback)
+    });
+  }
+
+  void change(List parameters) {
+    for (var callback in _callbacks) {
+      callback?.apply(parameters);
+    }
+  }
+}
+
+/// The term "item" refers to anything that can be displayed
+/// in a pane within the workspace, either in the {WorkspaceCenter} or in one
+/// of the three {Dock}s. The workspace expects items to conform to the
+/// following interface:
+class Item extends ProxyHolder {
+
+  JsChangeListener onDidChangeTitle = new JsChangeListener();
+
+  String _title;
+
+  Item(JsObject object) : super(object);
+
+  Item.fromFields({element, title, uri, defaultLocation, destroy})
+      : _title = title,
+        super(jsify({
+    'element': element,
+    // Returns the URI associated with the item.
+    'getURI': () => uri,
+    // Tells the workspace where your item should be opened in absence of a user
+    // override. Items can appear in the center or in a dock on the left, right, or
+    // bottom of the workspace.
+    //
+    // Returns a {String} with one of the following values: `'center'`, `'left'`,
+    // `'right'`, `'bottom'`. If this method is not defined, `'center'` is the
+    // default.
+    'getDefaultLocation': () => defaultLocation,
+    // Destroys the item. This will be called when the item is removed from its
+    // parent pane.
+    'destroy': destroy,
+  })) {
+    // Returns a {String} containing the title of the item to display on its
+    // associated tab.
+    obj['getTitle'] = jsify(() => _title);
+    // Called by the workspace so it can be notified when the item's title changes.
+    // Must return a {Disposable}.
+    obj['onDidChangeTitle'] = jsify(onDidChangeTitle.add);
+
+    // Custom functions.  Used to reach original Item objects, from
+    // passed in Item references.  I.e., go through item functions instead
+    // of using local private fields that maybe not be an Item constructed
+    // with JsObject ctor.
+    obj['setTitle'] = jsify((String newTitle) {
+      _title = newTitle;
+      onDidChangeTitle.change([newTitle]);
+    });
+  }
+
+  // Any function below must go through invoking a JsFunction, because
+  // private fields might not be in this instance of Item.
+  String get uri => invoke('getURI');
+
+  String get title => invoke('getTitle');
+  set title(String newTitle) => invoke('setTitle', newTitle);
+
+  // Not proxied yet:
+  //
+  // #### `onDidDestroy(callback)`
+  //
+  // Called by the workspace so it can be notified when the item is destroyed.
+  // Must return a {Disposable}.
+  //
+  // #### `serialize()`
+  //
+  // Serialize the state of the item. Must return an object that can be passed to
+  // `JSON.stringify`. The state should include a field called `deserializer`,
+  // which names a deserializer declared in your `package.json`. This method is
+  // invoked on items when serializing the workspace so they can be restored to
+  // the same location later.
+  //
+  // #### `getLongTitle()`
+  //
+  // Returns a {String} containing a longer version of the title to display in
+  // places like the window title or on tabs their short titles are ambiguous.
+  //
+  // #### `getIconName()`
+  //
+  // Return a {String} with the name of an icon. If this method is defined and
+  // returns a string, the item's tab element will be rendered with the `icon` and
+  // `icon-${iconName}` CSS classes.
+  //
+  // ### `onDidChangeIcon(callback)`
+  //
+  // Called by the workspace so it can be notified when the item's icon changes.
+  // Must return a {Disposable}.
+  //
+  // #### `getAllowedLocations()`
+  //
+  // Tells the workspace where this item can be moved. Returns an {Array} of one
+  // or more of the following values: `'center'`, `'left'`, `'right'`, or
+  // `'bottom'`.
+  //
+  // #### `isPermanentDockItem()`
+  //
+  // Tells the workspace whether or not this item can be closed by the user by
+  // clicking an `x` on its tab. Use of this feature is discouraged unless there's
+  // a very good reason not to allow users to close your item. Items can be made
+  // permanent *only* when they are contained in docks. Center pane items can
+  // always be removed. Note that it is currently still possible to close dock
+  // items via the `Close Pane` option in the context menu and via Atom APIs, so
+  // you should still be prepared to handle your dock items being destroyed by the
+  // user even if you implement this method.
+  //
+  // #### `save()`
+  //
+  // Saves the item.
+  //
+  // #### `saveAs(path)`
+  //
+  // Saves the item to the specified path.
+  //
+  // #### `getPath()`
+  //
+  // Returns the local path associated with this item. This is only used to set
+  // the initial location of the "save as" dialog.
+  //
+  // #### `isModified()`
+  //
+  // Returns whether or not the item is modified to reflect modification in the
+  // UI.
+  //
+  // #### `onDidChangeModified()`
+  //
+  // Called by the workspace so it can be notified when item's modified status
+  // changes. Must return a {Disposable}.
+  //
+  // #### `copy()`
+  //
+  // Create a copy of the item. If defined, the workspace will call this method to
+  // duplicate the item when splitting panes via certain split commands.
+  //
+  // #### `getPreferredHeight()`
+  //
+  // If this item is displayed in the bottom {Dock}, called by the workspace when
+  // initially displaying the dock to set its height. Once the dock has been
+  // resized by the user, their height will override this value.
+  //
+  // Returns a {Number}.
+  //
+  // #### `getPreferredWidth()`
+  //
+  // If this item is displayed in the left or right {Dock}, called by the
+  // workspace when initially displaying the dock to set its width. Once the dock
+  // has been resized by the user, their width will override this value.
+  //
+  // Returns a {Number}.
+  //
+  // #### `onDidTerminatePendingState(callback)`
+  //
+  // If the workspace is configured to use *pending pane items*, the workspace
+  // will subscribe to this method to terminate the pending state of the item.
+  // Must return a {Disposable}.
+  //
+  // #### `shouldPromptToSave()`
+  //
+  // This method indicates whether Atom should prompt the user to save this item
+  // when the user closes or reloads the window. Returns a boolean.
 }
 
 /// Represents the state of the user interface for the entire window. Interact
@@ -93,6 +271,7 @@ class Workspace extends ProxyHolder {
       Future future = promiseToFuture(invoke('open', url, options));
       return future.then((result) {
         if (result == null) throw 'unable to open ${url}';
+        if (url.startsWith('atom://dartlang')) return null;
         TextEditor editor = new TextEditor(result);
         return editor.isValid() ? editor : null;
       });
@@ -130,6 +309,8 @@ class Workspace extends ProxyHolder {
       return opener(url, m);
     }));
   }
+
+  Stream<JsObject> get onDidDestroyPaneItem => eventStream('onDidDestroyPaneItem');
 
   /// Save all dirty editors.
   void saveAll() {
@@ -203,6 +384,8 @@ class Pane extends ProxyHolder {
 
   /// Make the given item active, causing it to be displayed by the pane's view.
   void activateItem(dynamic item) => invoke('activateItem', item);
+
+  bool destroyItem(dynamic item) => invoke('destroyItem', item);
 }
 
 class Gutter extends ProxyHolder {

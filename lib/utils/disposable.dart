@@ -6,8 +6,6 @@ import 'dart:html';
 
 import 'package:logging/logging.dart';
 
-import '../src/js.dart';
-
 final Logger _logger = new Logger('disposable');
 
 abstract class Disposable {
@@ -52,7 +50,7 @@ class EventListener implements Disposable {
 
   dynamic _callback;
 
-  EventListener(this.obj, this.eventName, void fn(JsObject e)) {
+  EventListener(this.obj, this.eventName, void fn(e)) {
     _callback = fn;
     obj.addEventListener(eventName, _callback);
   }
