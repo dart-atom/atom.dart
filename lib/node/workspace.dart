@@ -101,10 +101,12 @@ class Item extends ProxyHolder {
 
   // Any function below must go through invoking a JsFunction, because
   // private fields might not be in this instance of Item.
-  String get uri => invoke('getURI');
+  String get uri => obj.hasProperty('getURI') ? invoke('getURI') : null;
 
-  String get title => invoke('getTitle');
-  set title(String newTitle) => invoke('setTitle', newTitle);
+  String get title => obj.hasProperty('getTitle') ? invoke('getTitle') : null;
+  set title(String newTitle) {
+    if (obj.hasProperty('setTitle')) invoke('setTitle', newTitle);
+  }
 
   // Not proxied yet:
   //
