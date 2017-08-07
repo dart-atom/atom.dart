@@ -19,8 +19,7 @@ self.setInterval = function(f, millis) { return window.setInterval(f, millis); }
 self.clearInterval = function(id) { window.clearInterval(id); };
 
 // Work around interop issues.
-self.getTextEditorForElement = function(element) { return element.o.getModel(); };
-self.uncrackDart2js = function(obj) { return obj.o; };
+self.getTextEditorForElement = function(element) { return element.getModel(); };
 
 self._domHoist = function(element, targetQuery) {
   var target = document.querySelector(targetQuery);

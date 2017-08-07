@@ -24,9 +24,6 @@ dynamic jsify(obj) {
   return obj;
 }
 
-/// This method depends on the embedder defining this method in their JS (uncrackDart2js).
-JsObject uncrackDart2js(dynamic obj) => context.callMethod('uncrackDart2js', [obj]);
-
 /// Convert a JsObject to a List or Map based on `JSON.stringify` and
 /// dart:convert's `JSON.decode`.
 dynamic jsObjectToDart(JsObject obj) {
