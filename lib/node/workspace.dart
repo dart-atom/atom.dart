@@ -64,7 +64,8 @@ class Item extends ProxyHolder {
 
   Item(JsObject object) : super(object);
 
-  Item.fromFields({element, title, uri, defaultLocation, destroy})
+  Item.fromFields({html.Element element, String title, String uri,
+      String defaultLocation, void destroy()})
       : _title = title,
         super(jsify({
     'element': element,
@@ -101,6 +102,7 @@ class Item extends ProxyHolder {
 
   // Any function below must go through invoking a JsFunction, because
   // private fields might not be in this instance of Item.
+
   String get uri => obj.hasProperty('getURI') ? invoke('getURI') : null;
 
   String get title => obj.hasProperty('getTitle') ? invoke('getTitle') : null;
