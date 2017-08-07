@@ -242,13 +242,14 @@ Future<String> promptUser(String prompt,
   Element element = new DivElement();
   element.setInnerHtml('''
     <label>${prompt}</label>
-    <atom-text-editor mini>${defaultText}</atom-text-editor>
+    <atom-text-editor mini></atom-text-editor>
 ''',
       treeSanitizer: new TrustedHtmlTreeSanitizer());
 
   Element editorElement = element.querySelector('atom-text-editor');
   JsFunction editorConverter = context['getTextEditorForElement'];
   TextEditor editor = new TextEditor(editorConverter.apply([editorElement]));
+  editor.setText(defaultText);
   if (selectText) {
     editor.selectAll();
   } else if (selectLastWord) {
@@ -262,11 +263,7 @@ Future<String> promptUser(String prompt,
 
   // Focus the element.
   Timer.run(() {
-    // There's a bug in Dart's JS interop where we can't see custom elements
-    // well. In order to work around it, we get the raw JS object, wrap it in a
-    // JsObject, pass that to a semantic wrapper around TextEditorElement, and
-    // then call `focused()`.
-    JsObject obj = new JsObject.fromBrowserObject(uncrackDart2js(editorElement));
+    JsObject obj = new JsObject.fromBrowserObject(editorElement);
     new TextEditorElement(obj).focused();
   });
 
