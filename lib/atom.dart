@@ -87,4 +87,19 @@ class Atom extends ProxyHolder {
     });
     return completer.future;
   }
+
+  /// Prompt the user for a file location.
+  ///
+  /// We go through js because we need to use atom remote and it seems
+  /// not to play well with dart rt loop.
+  Future<String> pickFile(String file) {
+    JsFunction showOpenDialog = context['showOpenDialog'];
+    var result = jsObjectToDart(showOpenDialog.apply([{
+      'properties': ['openFile'],
+      'title': 'Locate Browser',
+      'defaultPath': file
+    }]));
+    return new Future.value(result is List && result.isNotEmpty
+        ? result.first : null);
+  }
 }

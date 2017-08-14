@@ -29,6 +29,13 @@ self._domHoist = function(element, targetQuery) {
 self._domRemove = function(element) {
   element.parentNode.removeChild(element);
 };
+
+// 'remote' doesn't play well with dart rt loop, so we go through javascript.
+self.showOpenDialog = function(options) {
+  var dialog = require('electron').remote.dialog;
+  return dialog.showOpenDialog(options);
+};
+
 """;
 
 /// The dart2js generated code is not expecting the Atom runtime
