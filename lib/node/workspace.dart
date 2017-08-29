@@ -683,16 +683,8 @@ class TextEditor extends ProxyHolder {
   /// will maintain its logical location as the buffer is changed, so if you
   /// mark a particular word, the marker will remain over that word even if the
   /// word's location in the buffer changes.
-  Marker markBufferRange(Range range, {
-    Map<String, dynamic> properties, bool persistent
-  }) {
-    if (properties == null && persistent != null) {
-      properties = {'persistent': persistent};
-    } else if (persistent != null) {
-      properties['persistent'] = persistent;
-    }
-
-    return new Marker(invoke('markBufferRange', range, properties));
+  Marker markBufferRange(Range range) {
+    return new Marker(invoke('markBufferRange', range));
   }
 
   /// Adds a decoration that tracks a Marker. When the marker moves, is
