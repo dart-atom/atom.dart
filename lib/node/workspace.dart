@@ -578,7 +578,7 @@ class TextEditorComponent extends ProxyHolder {
 
   num get scrollTop => invoke('getScrollTop');
   num get scrollLeft => invoke('getScrollLeft');
-  num get gutterWidth => invoke('getGutterWidth');
+  num get gutterWidth => invokeExisting(['getGutterWidth', 'getGutterContainerWidth']);
 }
 
 class TextEditor extends ProxyHolder {

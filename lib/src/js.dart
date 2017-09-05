@@ -64,6 +64,15 @@ class ProxyHolder {
 
   ProxyHolder(this.obj);
 
+  dynamic invokeExisting(List<String> methods, [dynamic arg1, dynamic arg2, dynamic arg3]) {
+    for (var method in methods) {
+      if (obj.hasProperty(method)) {
+        return invoke(method, arg1, arg2, arg3);
+      }
+    }
+    return null;
+  }
+
   dynamic invoke(String method, [dynamic arg1, dynamic arg2, dynamic arg3]) {
     if (arg1 != null) arg1 = jsify(arg1);
     if (arg2 != null) arg2 = jsify(arg2);
