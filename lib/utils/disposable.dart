@@ -79,12 +79,12 @@ class StreamSubscriptions implements Disposable {
     for (StreamSubscription subscription in _subscriptions) {
       if (catchExceptions) {
         try {
-          subscription.cancel();
+          subscription?.cancel();
         } catch (e, st) {
           _logger.severe('exception during subscription cancel', e, st);
         }
       } else {
-        subscription.cancel();
+        subscription?.cancel();
       }
     }
 
