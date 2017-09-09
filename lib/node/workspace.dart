@@ -239,6 +239,11 @@ class Workspace extends ProxyHolder {
     return new JsDisposable(disposable);
   }
 
+  Disposable observeActiveTextEditor(void callback(TextEditor editor)) {
+    var disposable = invoke('observeActiveTextEditor', (ed) => callback(new TextEditor(ed)));
+    return new JsDisposable(disposable);
+  }
+
   Disposable observeActivePaneItem(void callback(dynamic item)) {
     // TODO: What type is the item?
     var disposable = invoke('observeActivePaneItem', (item) => callback(item));
