@@ -70,7 +70,13 @@ class StreamSubscriptions implements Disposable {
 
   StreamSubscriptions({this.catchExceptions: true});
 
-  void add(StreamSubscription subscription) => _subscriptions.add(subscription);
+  void add(StreamSubscription subscription) {
+    if (subscription == null) {
+      _logger.warning('null subscription ignored');
+    } else {
+      _subscriptions.add(subscription);
+    }
+  }
 
   bool remove(StreamSubscription subscription) =>
       _subscriptions.remove(subscription);
@@ -79,7 +85,7 @@ class StreamSubscriptions implements Disposable {
     for (StreamSubscription subscription in _subscriptions) {
       if (catchExceptions) {
         try {
-          subscription?.cancel();
+          subscription.cancel();
         } catch (e, st) {
           _logger.severe('exception during subscription cancel', e, st);
         }
