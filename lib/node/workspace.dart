@@ -795,7 +795,7 @@ class TextEditor extends ProxyHolder {
   /// your callback will be called for each cursor.
   ///
   /// Returns the new buffer position.
-  Stream get onDidChangeCursorPosition {
+  Stream<Point> get onDidChangeCursorPosition {
     return eventStream('onDidChangeCursorPosition').map(
       (e) => new Point(e['newBufferPosition']));
   }
